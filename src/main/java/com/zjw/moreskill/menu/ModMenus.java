@@ -1,14 +1,9 @@
 package com.zjw.moreskill.menu;
 
-import org.checkerframework.checker.units.qual.C;
-
 import com.zjw.moreskill.MoreSkill;
-import com.zjw.moreskill.screen.SkillPanelScreen;
-
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.network.IContainerFactory;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;

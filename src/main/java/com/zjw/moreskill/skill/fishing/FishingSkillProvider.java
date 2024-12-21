@@ -1,14 +1,13 @@
 package com.zjw.moreskill.skill.fishing;
 
-import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.capabilities.*;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraft.core.Direction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.LazyOptional;
 
 public class FishingSkillProvider implements ICapabilityProvider {
 
@@ -20,7 +19,6 @@ public class FishingSkillProvider implements ICapabilityProvider {
     public FishingSkillProvider() {
         // 初始化代码...
     }
-
     /**
      * 获取指定能力的实现
      * 此方法用于注册和获取能力（Capability）的实例，在Minecraft中用于实现自定义的能力系统

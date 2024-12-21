@@ -24,7 +24,9 @@ public class ClientEvent {
                 Minecraft instance = Minecraft.getInstance();
                 Player player = instance.player;
 
-                instance.setScreen(new SkillPanelScreen(player));
+                if (player != null) {
+                    instance.setScreen(new SkillPanelScreen(player));
+                }
                 // 打开自定义的菜单
 //                if (player != null) {
 //                    NetworkHooks.openScreen((ServerPlayer) player,new SkillPanelProvider());

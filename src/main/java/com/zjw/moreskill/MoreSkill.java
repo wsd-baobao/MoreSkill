@@ -1,9 +1,7 @@
 package com.zjw.moreskill;
 
-import com.zjw.moreskill.client.ClientSetup;
 import com.zjw.moreskill.skill.CapabilityEventHandler;
 import com.zjw.moreskill.skill.fishing.FishingHandler;
-
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -26,8 +24,6 @@ public class MoreSkill {
     
     public MoreSkill() {
 
-        // 在客户端上安全运行，执行ClientSetup类的initEarly方法
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientSetup::initEarly);
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 

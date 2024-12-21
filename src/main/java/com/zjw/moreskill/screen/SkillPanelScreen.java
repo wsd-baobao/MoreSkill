@@ -3,16 +3,11 @@ package com.zjw.moreskill.screen;
 import com.zjw.moreskill.MoreSkill;
 import com.zjw.moreskill.skill.fishing.Fishing;
 import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
-
-import com.zjw.moreskill.skill.fishing.IFishing;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.util.LazyOptional;
 
 public class SkillPanelScreen extends Screen {
 
@@ -38,30 +33,29 @@ public class SkillPanelScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        // 初始化按钮和其他组件
+
+
+        // 刷新玩家的数据
         refreshPlayerData();
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 
-        this.renderBackground(graphics);
-        this.minecraft.getTextureManager().bindForSetup(TEXTURE);
+//        this.renderBackground(graphics);
+//        this.minecraft.getTextureManager().bindForSetup(TEXTURE);
         int x = (this.width - 256) / 2;
         int y = (this.height - 256) / 2;
         // blit(graphics, x, y, 0, 0, 256, 256, 256, 256);
 
-        graphics.blit(TEXTURE, y, y, x, y, 256, 256);
-        // 渲染技能数据
-        // graphics.drawString(this.font, String.valueOf(Math.random()), x + 10, y + 5,
-        // 0xFFFFFF);
+        graphics.fill(x, y, x, y, 256, 256);
+
+
         graphics.drawString(this.font, "Fishing Level: " + fishingSkill.getLevel(), x + 10, y + 10, 0xFFFFFF);
         graphics.drawString(
                 this.font,
-                "Fishing Exp: " + fishingSkill.getExp() + "/" + fishingSkill.getExpToNextLevel(), x + 10, y + 25,
+                "Fishing Exp: " + fishingSkill.getExp() + "/" + fishingSkill.getRequiredExpForNextLevel(), x + 10, y + 25,
                 0xFFFFFF);
-
-
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

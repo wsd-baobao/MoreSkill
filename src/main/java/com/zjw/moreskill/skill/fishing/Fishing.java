@@ -4,6 +4,8 @@ package com.zjw.moreskill.skill.fishing;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.Random;
+
 /*
  * 钓鱼技能类
  */
@@ -44,35 +46,36 @@ public class Fishing implements IFishing {
             setExp(0); // 默认值
         }
     }
-    
+
     @Override
     public void addExp(Player player, int exp) {
         this.exp += exp;
         int requiredExp = getRequiredExpForNextLevel();
         boolean leveledUp = false;
-
         while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
             this.level++;
-            this.exp -= requiredExp;
-            requiredExp = getRequiredExpForNextLevel();
+            this.exp = 0;
             leveledUp = true;
         }
-
         if (this.level >= MAX_LEVEL) {
             this.exp = 0;
         }
-
     }
 
-    private int getRequiredExpForNextLevel() {
-        return 100 + (this.level * 20);
+    @Override
+    public int numberOfItemsToFish() {
+        return new Random().nextInt(Math.min(11, (level / 10) + 2));
+    }
+
+    public int getRequiredExpForNextLevel() {
+        return 100 + (this.level * 50);
     }
 
     @Override
     public int getLevel() {
         return this.level;
     }
-    
+
 
     @Override
     public int getExp() {
@@ -92,10 +95,10 @@ public class Fishing implements IFishing {
 
     @Override
     public void setExp(int exp) {
-      this.exp = exp;
-        
+        this.exp = exp;
+
     }
-    
-    
+
+
 }
 

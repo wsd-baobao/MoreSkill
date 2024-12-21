@@ -19,4 +19,5 @@ public interface IFishing extends INBTSerializable<CompoundTag>{
 
     void addExp(Player player, int exp);
 
+    int numberOfItemsToFish();
 }

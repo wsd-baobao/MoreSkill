@@ -2,7 +2,6 @@ package com.zjw.moreskill.skill;
 
 import com.zjw.moreskill.MoreSkill;
 import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
