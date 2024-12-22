@@ -1,5 +1,6 @@
 package com.zjw.moreskill.skill.fishing;
 
+import com.zjw.moreskill.Config;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.EnchantedBookItem;
@@ -85,14 +86,21 @@ public class FishingPoolManager {
         }
         return selectedItems;
     }
+    private static void addItemPoolForConfig() {
+        List<List<Item>> fishingPools = Config.fishingPools;
+        for (int i = 0; i < fishingPools.size(); i++){
+            List<Item> pool = fishingPools.get(i);
+            if (!pool.isEmpty()){
+                for (Item item : pool) {
+                    ITEM_POOLS.get(i*10).add(new ItemStack(item));
+//                    System.out.println("添加配置中的物品");
+//                    System.out.println(item);
+                }
 
-//    public static FishingPoolManager getInstance() {
-//        return SingletonHolder.INSTANCE;
-//    }
-//
-//    private static class SingletonHolder {
-//        private static final FishingPoolManager INSTANCE = new FishingPoolManager();
-//    }
+            }
+        }
+
+    }
 
     static {
         // 第 1 池：从 40% 降到 18%
@@ -531,5 +539,8 @@ public class FishingPoolManager {
             return Math.min(max, min + (max - min) * (level / 100.0));
         });
 
+        addItemPoolForConfig();
     }
+
+
 }

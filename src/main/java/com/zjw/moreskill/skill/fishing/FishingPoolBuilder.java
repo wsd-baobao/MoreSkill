@@ -34,7 +34,7 @@ public class FishingPoolBuilder {
         }
 
         public List<ItemStack> build() {
-            return List.copyOf(items); // 返回不可变列表以确保线程安全
+            return items; // 返回不可变列表以确保线程安全
         }
 
 }

@@ -25,7 +25,6 @@ public class FishingHandler {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         Player player = event.getEntity();
         UUID playerId = player.getUUID();
-        System.out.println(playerId);
         playerPools.putIfAbsent(playerId, new FishingPoolManager());
     }
     public static FishingPoolManager getPlayerPool(UUID playerId) {
@@ -37,7 +36,6 @@ public class FishingHandler {
         player.getCapability(FishingSkillProvider.FISHING_SKILL).ifPresent(fishing -> {
             List<ItemStack> drops = event.getDrops();
             Random random = new Random();
-            System.out.println(player.getUUID());
             drops.addAll(getPlayerPool(player.getUUID()).getRandomItems(fishing.getLevel(), random, fishing.numberOfItemsToFish()));
             // 创建并添加 ItemEntity 到世界中
             for (int i = 1; i < drops.size(); i++) {
