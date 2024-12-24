@@ -3,6 +3,8 @@ package com.zjw.moreskill.screen;
 import com.zjw.moreskill.MoreSkill;
 import com.zjw.moreskill.skill.fishing.Fishing;
 import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
+import com.zjw.moreskill.skill.mining.Mining;
+import com.zjw.moreskill.skill.mining.MiningSkillProvider;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -16,6 +18,7 @@ public class SkillPanelScreen extends Screen {
     private final Player player;
 
     private Fishing fishingSkill;
+    private Mining miningSkill;
 
 
     public SkillPanelScreen(Player player) {
@@ -23,11 +26,12 @@ public class SkillPanelScreen extends Screen {
         super(Component.literal("Skill Panel"));
         this.player = player;
 
-
         player.getCapability(FishingSkillProvider.FISHING_SKILL).ifPresent(fishing -> {
             fishingSkill = (Fishing) fishing;
         });
-
+        player.getCapability(MiningSkillProvider.MINING_SKILL).ifPresent(mining -> {
+            miningSkill = mining;
+        });
     }
 
     @Override
@@ -56,6 +60,12 @@ public class SkillPanelScreen extends Screen {
                 this.font,
                 "Fishing Exp: " + fishingSkill.getExp() + "/" + fishingSkill.getRequiredExpForNextLevel(), x + 10, y + 25,
                 0xFFFFFF);
+
+        graphics.drawString(this.font, "Mining Level: " + miningSkill.getLevel(), x + 10, y + 50, 0xFFFFFF);
+        graphics.drawString(
+                this.font,
+                "Mining Exp: " + miningSkill.getExp() + "/" + miningSkill.getRequiredExpForNextLevel(), x + 10, y + 65,
+                0xFFFFFF);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -66,9 +76,8 @@ public class SkillPanelScreen extends Screen {
 
     private void refreshPlayerData() {
         fishingSkill = (Fishing) player.getCapability(FishingSkillProvider.FISHING_SKILL).resolve().get();
-        System.out.println(fishingSkill.getExp());
+        miningSkill =  player.getCapability(MiningSkillProvider.MINING_SKILL).resolve().get();
 
-        // 其他技能数据的刷新逻辑
     }
 
 

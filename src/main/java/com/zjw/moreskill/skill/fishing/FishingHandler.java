@@ -10,7 +10,9 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.*;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -22,7 +24,7 @@ public class FishingHandler {
     private static final ConcurrentHashMap<UUID, FishingPoolManager> playerPools = new ConcurrentHashMap<>();
     // 监听玩家加入事件，在玩家进入游戏时初始化FishingPoolManager
     @SubscribeEvent
-    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+    public  void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         Player player = event.getEntity();
         UUID playerId = player.getUUID();
         playerPools.putIfAbsent(playerId, new FishingPoolManager());
@@ -31,7 +33,7 @@ public class FishingHandler {
         return playerPools.getOrDefault(playerId, null);
     }
     @SubscribeEvent
-    public void onPlayerFish(ItemFishedEvent event) {
+    public  void onPlayerFish(ItemFishedEvent event) {
         Player player = event.getEntity();
         player.getCapability(FishingSkillProvider.FISHING_SKILL).ifPresent(fishing -> {
             List<ItemStack> drops = event.getDrops();
@@ -41,6 +43,7 @@ public class FishingHandler {
             for (int i = 1; i < drops.size(); i++) {
                 ItemStack extraDrop = drops.get(i);
                 ItemEntity itemEntity = new ItemEntity(player.level(), player.getX(), player.getY(), player.getZ(), extraDrop);
+                itemEntity.setUnlimitedLifetime();
                 player.level().addFreshEntity(itemEntity);
                 player.level().addFreshEntity(new ExperienceOrb(player.level(), player.getX(), player.getY(), player.getZ(), 1));
             }

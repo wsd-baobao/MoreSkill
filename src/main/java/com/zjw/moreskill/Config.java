@@ -2,6 +2,7 @@ package com.zjw.moreskill;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -11,7 +12,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = MoreSkill.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -40,6 +40,11 @@ public class Config {
             .comment("从0号池到9号池，越往后概率越小")
             .define("fishingPoolItems", defaultFishingPools(), Config::validateItemName);
 
+    //添加矿物的配置
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> MINING_ORE = BUILDER
+            .comment("添加矿物到到挖矿技能的列表")
+            .define("addORE", List.of("minecraft:iron_ore", "minecraft:iron_ore"), Config::validateBlockName);
+
     private static List<List<String>> defaultFishingPools() {
         List<List<String>> list = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -59,9 +64,13 @@ public class Config {
 //    public static String magicNumberIntroduction;
 //    public static Set<Item> items;
     public static List<List<Item>> fishingPools;
+    public static List<Block> miningOre;
 
     private static boolean validateItemName(final Object obj) {
         return obj instanceof final String itemName && ForgeRegistries.ITEMS.containsKey(new ResourceLocation(itemName));
+    }
+    private static boolean validateBlockName(final Object obj) {
+        return obj instanceof final String blockName && ForgeRegistries.BLOCKS.containsKey(new ResourceLocation(blockName));
     }
 
     @SubscribeEvent
@@ -69,6 +78,9 @@ public class Config {
 //        logDirtBlock = LOG_DIRT_BLOCK.get();
 //        magicNumber = MAGIC_NUMBER.get();
 //        magicNumberIntroduction = MAGIC_NUMBER_INTRODUCTION.get();
+        miningOre = MINING_ORE.get().stream()
+                .map(blockName -> ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName)))
+                .collect(Collectors.toList());
 
         fishingPools = FISHING_POOLS.get().stream()
                 .map(list -> list.stream()
