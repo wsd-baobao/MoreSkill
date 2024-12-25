@@ -15,8 +15,8 @@ import java.util.*;
 //todo 添加从配置获取物品池的功能
 
 public class FishingPoolManager {
-    private static final Map<Integer, List<ItemStack>> ITEM_POOLS = new LinkedHashMap<>();
-    private static final Map<Integer, ProbabilityFunction> POOL_PROBABILITY_FUNCTIONS = new LinkedHashMap<>();
+    private static final Map<Integer, List<ItemStack>> ITEM_POOLS = new HashMap<>();
+    private static final Map<Integer, ProbabilityFunction> POOL_PROBABILITY_FUNCTIONS = new HashMap<>();
 
     private static Map<Integer, Double> cachedPoolWeights = new HashMap<>();
     private static int lastCalculatedLevel = -1;
@@ -48,9 +48,9 @@ public class FishingPoolManager {
         return stack;
     }
 
-    private static void addItemPool(int minLevel, List<ItemStack> items, ProbabilityFunction probabilityFunction) {
-        ITEM_POOLS.put(minLevel, items);
-        POOL_PROBABILITY_FUNCTIONS.put(minLevel, probabilityFunction);
+    private static void addItemPool(int Level, List<ItemStack> items, ProbabilityFunction probabilityFunction) {
+        ITEM_POOLS.put(Level,items);
+        POOL_PROBABILITY_FUNCTIONS.put(Level, probabilityFunction);
     }
     public List<ItemStack> getRandomItems(int level, Random random, int numberOfItems) {
 
@@ -65,6 +65,7 @@ public class FishingPoolManager {
                 }
             }
         }
+        System.out.println(cachedPoolWeights.toString());
         List<ItemStack> selectedItems = new ArrayList<>();
         for (int i = 0; i < numberOfItems; i++) {
             // 计算各池的权重
@@ -72,16 +73,16 @@ public class FishingPoolManager {
             // 归一化后随机选择物品池
             double rand = random.nextDouble() * totalWeight;
             for (Map.Entry<Integer, Double> entry : cachedPoolWeights.entrySet()) {
-                rand -= entry.getValue();
-                if (rand <= 0) {
-                    List<ItemStack> poolItems = ITEM_POOLS.get(entry.getKey());
-//                    System.out.println(entry.getKey());
-//                    System.out.println(poolItems);
-                    if (!poolItems.isEmpty()) {
-                        selectedItems.add(poolItems.get(random.nextInt(poolItems.size())));
+
+                    rand -= entry.getValue();
+                    if (rand <= 0) {
+                        List<ItemStack> poolItems = ITEM_POOLS.get(entry.getKey());
+                        if (!poolItems.isEmpty()) {
+                            selectedItems.add(poolItems.get(random.nextInt(poolItems.size())));
+                        }
+                        break;
                     }
-                    break;
-                }
+
             }
         }
         return selectedItems;
@@ -93,8 +94,6 @@ public class FishingPoolManager {
             if (!pool.isEmpty()){
                 for (Item item : pool) {
                     ITEM_POOLS.get(i*10).add(new ItemStack(item));
-//                    System.out.println("添加配置中的物品");
-//                    System.out.println(item);
                 }
 
             }

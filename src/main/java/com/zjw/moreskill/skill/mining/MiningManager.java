@@ -1,6 +1,7 @@
 package com.zjw.moreskill.skill.mining;
 
 import com.zjw.moreskill.Config;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -8,35 +9,24 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class MiningManager {
 
     // 使用静态块初始化矿石类型的集合
     private static final Set<Block> ORE_TYPES = new HashSet<>();
     private static final Set<Block> STONE_TYPES = new HashSet<>();
+    private static final int EFFECT_DURATION = 20 * 30; // 30秒
+    private static final Map<Integer, MobEffect> LEVEL_EFFECTS = new HashMap<>();
 
     public static void addEffect(Player player, int level) {
-        if (level > 10) {
-            player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 20 * 30, 0,true, true));
+        if (player == null) {
+            throw new IllegalArgumentException("Player cannot be null");
         }
-        if (level >20){
-            player.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 20 * 30, 0,true, true));
-        }
-        if (level >40){
-            player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 20 * 30, 0,true, true));
-        }
-        if (level >50){
-            player.addEffect(new MobEffectInstance(MobEffects.SATURATION, 20 * 30, 0,true, true));
-        }
-        if (level >80){
-            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 30, 0,true, true));
-        }
-        if (level >=100){
-            player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 20 * 30, 0,true, true));
+        for (Map.Entry<Integer, MobEffect> entry : LEVEL_EFFECTS.entrySet()) {
+            if (level >= entry.getKey()) {
+                player.addEffect(new MobEffectInstance(entry.getValue(), EFFECT_DURATION, 0, true, true));
+            }
         }
     }
     //挖基岩用的
@@ -94,6 +84,13 @@ public class MiningManager {
         STONE_TYPES.add(Blocks.COBBLESTONE);
         STONE_TYPES.add(Blocks.BLACKSTONE);
         STONE_TYPES.add(Blocks.POLISHED_BLACKSTONE);
+
+        LEVEL_EFFECTS.put(10, MobEffects.FIRE_RESISTANCE);
+        LEVEL_EFFECTS.put(20, MobEffects.DIG_SPEED);
+        LEVEL_EFFECTS.put(40, MobEffects.REGENERATION);
+        LEVEL_EFFECTS.put(50, MobEffects.SATURATION);
+        LEVEL_EFFECTS.put(80, MobEffects.DAMAGE_RESISTANCE);
+        LEVEL_EFFECTS.put(100, MobEffects.ABSORPTION);
     }
 
 

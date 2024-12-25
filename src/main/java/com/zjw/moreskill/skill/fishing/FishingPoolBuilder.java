@@ -10,7 +10,7 @@ import java.util.List;
 
 public class FishingPoolBuilder {
 
-        private static final List<ItemStack> items = new ArrayList<>();
+        private List<ItemStack> items = new ArrayList<>();
 
         public FishingPoolBuilder addItem(Item item) {
             items.add(item.getDefaultInstance());

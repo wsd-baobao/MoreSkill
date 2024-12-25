@@ -98,7 +98,5 @@ public class Fishing implements IFishing {
         this.exp = exp;
 
     }
-
-
 }
 

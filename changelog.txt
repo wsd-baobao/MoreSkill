@@ -147,7 +147,7 @@
  - 47.0.31 Demonstrate configureEach in run configs (#9594)
  - 47.0.30 Reduce verbosity of prepareRuns doc in MDK (#9593)
  - 47.0.29 Lazily configure MDK tasks, improve IDE support (#9592)
- - 47.0.28 Fix not dropping xp for player sourced explosions and various other cases when xp should drop (#9588)
+ - 47.0.28 Fix not dropping exp for player sourced explosions and various other cases when exp should drop (#9588)
  - 47.0.27 add item handler capability to chiseled bookshelf (#9587)
  - 47.0.26 Fix ignoring maxUpStep method overrides on entities (#9583)
  - 47.0.25 Add missing damage type tag provider modid, existing file helper constructor overload (#9581)

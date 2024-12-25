@@ -40,6 +40,7 @@ public class FishingHandler {
             Random random = new Random();
             drops.addAll(getPlayerPool(player.getUUID()).getRandomItems(fishing.getLevel(), random, fishing.numberOfItemsToFish()));
             // 创建并添加 ItemEntity 到世界中
+            System.out.println(drops.size());
             for (int i = 1; i < drops.size(); i++) {
                 ItemStack extraDrop = drops.get(i);
                 ItemEntity itemEntity = new ItemEntity(player.level(), player.getX(), player.getY(), player.getZ(), extraDrop);

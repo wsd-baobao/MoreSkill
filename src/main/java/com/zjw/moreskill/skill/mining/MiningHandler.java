@@ -7,16 +7,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -54,14 +50,13 @@ public class MiningHandler {
                 System.out.println("获取mining经验");
                 mining.addExp(player, drops.size());
                 player.giveExperiencePoints(drops.size());
-
             } else if (MiningManager.isStone(state)) {
                 mining.addExp(player, 1);
             }
         });
     }
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+    public  void onPlayerTick(TickEvent.PlayerTickEvent event) {
         Player player = event.player;
         if (player.level().getGameTime() % 200 == 0) {
             player.getCapability(MiningSkillProvider.MINING_SKILL).ifPresent(mining -> {
