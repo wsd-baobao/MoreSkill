@@ -5,6 +5,8 @@ import com.zjw.moreskill.skill.fishing.Fishing;
 import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
 import com.zjw.moreskill.skill.mining.Mining;
 import com.zjw.moreskill.skill.mining.MiningSkillProvider;
+import com.zjw.moreskill.skill.smithing.Smithing;
+import com.zjw.moreskill.skill.smithing.SmithingSkillProvider;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -19,7 +21,7 @@ public class SkillPanelScreen extends Screen {
 
     private Fishing fishingSkill;
     private Mining miningSkill;
-
+    private Smithing smithingSkill;
 
     public SkillPanelScreen(Player player) {
         // 初始化代码
@@ -31,6 +33,9 @@ public class SkillPanelScreen extends Screen {
         });
         player.getCapability(MiningSkillProvider.MINING_SKILL).ifPresent(mining -> {
             miningSkill = mining;
+        });
+        player.getCapability(SmithingSkillProvider.SMITHING_SKILL).ifPresent(smithing -> {
+            smithingSkill = smithing;
         });
     }
 
@@ -66,6 +71,13 @@ public class SkillPanelScreen extends Screen {
                 this.font,
                 "Mining Exp: " + miningSkill.getExp() + "/" + miningSkill.getRequiredExpForNextLevel(), x + 10, y + 65,
                 0xFFFFFF);
+
+        // 添加锻造技能显示
+        graphics.drawString(this.font, "Smithing Level: " + smithingSkill.getLevel(), x + 10, y + 90, 0xFFFFFF);
+        graphics.drawString(
+                this.font,
+                "Smithing Exp: " + smithingSkill.getExp() + "/" + smithingSkill.getExpToNextLevel(), x + 10, y + 105,
+                0xFFFFFF);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -77,6 +89,7 @@ public class SkillPanelScreen extends Screen {
     private void refreshPlayerData() {
         fishingSkill = (Fishing) player.getCapability(FishingSkillProvider.FISHING_SKILL).resolve().get();
         miningSkill =  player.getCapability(MiningSkillProvider.MINING_SKILL).resolve().get();
+        smithingSkill = player.getCapability(SmithingSkillProvider.SMITHING_SKILL).resolve().get();
 
     }
 

@@ -1,4 +1,4 @@
-package com.zjw.moreskill.skill.smithing;
+package com.zjw.moreskill.skill.farming;
 
 import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
@@ -9,15 +9,16 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SmithingSkillProvider implements ICapabilityProvider {
+public class FarmingProvider implements ICapabilityProvider {
+    public static final Capability<Farming> FARMING_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    public static final Capability <Smithing> SMITHING_SKILL = CapabilityManager.get(new CapabilityToken<>() {});
-
-    private static Smithing smithing = new Smithing();
-    private final LazyOptional<Smithing> SmithingCapability =  LazyOptional.of(()-> smithing);
+    private static Farming farming = new Farming();
+    private final LazyOptional<Farming> optional = LazyOptional.of(() -> farming);
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        return cap == SMITHING_SKILL ? SmithingCapability.cast() : LazyOptional.empty();
+        return cap == FARMING_CAPABILITY ? optional.cast() : LazyOptional.empty();
     }
+
+
 }
