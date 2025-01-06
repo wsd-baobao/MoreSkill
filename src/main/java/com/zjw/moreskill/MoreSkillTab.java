@@ -15,7 +15,7 @@ public class MoreSkillTab {
                     .withTabsBefore(CreativeModeTabs.COMBAT).icon(
                             () -> ModItems.ForgingHammerItem.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
-                        output.accept(ModItems.ForgingHammerItem.get());
+                        // output.accept(ModItems.ForgingHammerItem.get());
                         ModItems.ITEMS.getEntries().stream().map(RegistryObject::get).forEach(output::accept);
                     }).build());
 }

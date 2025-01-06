@@ -1,6 +1,9 @@
 package com.zjw.moreskill.skill;
 
 import com.zjw.moreskill.MoreSkill;
+import com.zjw.moreskill.skill.combat.CombatProvider;
+import com.zjw.moreskill.skill.cooking.CookingProvider;
+import com.zjw.moreskill.skill.farming.FarmingProvider;
 import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
 import com.zjw.moreskill.skill.mining.MiningSkillProvider;
 import com.zjw.moreskill.skill.smithing.SmithingSkillProvider;
@@ -19,7 +22,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//处理能力的加载与保存
+//澶勭悊鑳藉姏鐨勫姞杞戒笌淇濆瓨
 
 @Mod.EventBusSubscriber(modid = MoreSkill.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CapabilityEventHandler {
@@ -31,6 +34,9 @@ public class CapabilityEventHandler {
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "fishing_skill"), new FishingSkillProvider());
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "mining_skill"), new MiningSkillProvider());
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "smithing_skill"), new SmithingSkillProvider());
+            event.addCapability(new ResourceLocation(MoreSkill.MODID, "farming_skill"), new FarmingProvider());
+            event.addCapability(new ResourceLocation(MoreSkill.MODID, "cooking_skill"), new CookingProvider());
+            event.addCapability(new ResourceLocation(MoreSkill.MODID, "combat_skill"), new CombatProvider());
         }
     }
     @SubscribeEvent
@@ -41,6 +47,9 @@ public class CapabilityEventHandler {
         deserializeSkill(player, FishingSkillProvider.FISHING_SKILL, persistentData, "fishing_skill");
         deserializeSkill(player, MiningSkillProvider.MINING_SKILL, persistentData, "mining_skill");
         deserializeSkill(player, SmithingSkillProvider.SMITHING_SKILL, persistentData, "smithing_skill");
+        deserializeSkill(player, FarmingProvider.FARMING_CAPABILITY, persistentData, "farming_skill");
+        deserializeSkill(player, CookingProvider.COOKING_CAPABILITY, persistentData, "cooking_skill");
+        deserializeSkill(player, CombatProvider.COMBAT_CAPABILITY, persistentData, "combat_skill");
     }
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
@@ -48,15 +57,21 @@ public class CapabilityEventHandler {
         saveSkillData(player, FishingSkillProvider.FISHING_SKILL, "fishing_skill");
         saveSkillData(player, MiningSkillProvider.MINING_SKILL, "mining_skill");
         saveSkillData(player, SmithingSkillProvider.SMITHING_SKILL, "smithing_skill");
+        saveSkillData(player, FarmingProvider.FARMING_CAPABILITY, "farming_skill");
+        saveSkillData(player, CookingProvider.COOKING_CAPABILITY, "cooking_skill");
+        saveSkillData(player, CombatProvider.COMBAT_CAPABILITY, "combat_skill");
     }
 
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.player.level().getGameTime() % 2400 == 0) {
+        if (event.player.level().getGameTime() % 12000 == 0) {
             Player player = event.player;
             saveSkillData(player, FishingSkillProvider.FISHING_SKILL, "fishing_skill");
             saveSkillData(player, MiningSkillProvider.MINING_SKILL, "mining_skill");
             saveSkillData(player, SmithingSkillProvider.SMITHING_SKILL, "smithing_skill");
+            saveSkillData(player, FarmingProvider.FARMING_CAPABILITY, "farming_skill");
+            saveSkillData(player, CookingProvider.COOKING_CAPABILITY, "cooking_skill");
+            saveSkillData(player, CombatProvider.COMBAT_CAPABILITY, "combat_skill");
         }
     }
 
@@ -74,7 +89,7 @@ public class CapabilityEventHandler {
         player.getCapability(skillProvider).ifPresent(skill -> {
             CompoundTag compoundTag = skill.serializeNBT();
             player.getPersistentData().put(key, compoundTag);
-            // 添加日志记录
+           
             System.out.println("Saved " + key + " data for player: " + player.getName().getString());
         });
     }
