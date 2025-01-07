@@ -10,9 +10,8 @@ public class ModLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
-        add("itemGroup.moreskill.more_skill", "More Skill");
+        add("itemGroup.more_skill", "More Skill");
         add("item.moreskill.forging_hammer_item", "Forging Hammer");
-        add("item.moreskill.forging_hammer_item.tooltip", "A hammer that can be used to forge items");
         add("key.categories.moreskill", "More Skill");
         add("key.moreskill.open_ui", "Open UI");
     }

@@ -310,7 +310,7 @@ public class SmithingHandler {
             
             if (hasAbsorption) {
                 // 设置5分钟的吸收心效果
-                int absorptionDuration = 20 * 60 * 5; // 5分钟，以tick为单位
+                int absorptionDuration = 20 * 60 ; // 1分钟，以tick为单位
                 int amplifier = Math.min((int)(totalAbsorption / 2), 4); // 等级限制在0-4之间
                 
                 // 如果已经有吸收效果，选择较高的等级

@@ -57,7 +57,7 @@ public class SkillPanelScreen extends Screen {
         int y = (this.height - 256) / 2;
         // blit(graphics, x, y, 0, 0, 256, 256, 256, 256);
 
-        graphics.fill(x, y, x, y, 256, 256);
+        graphics.fill(x, y, x, y, 256, 0xFF000000);
 
 
         graphics.drawString(this.font, "Fishing Level: " + fishingSkill.getLevel(), x + 10, y + 10, 0xFFFFFF);
@@ -78,6 +78,7 @@ public class SkillPanelScreen extends Screen {
                 this.font,
                 "Smithing Exp: " + smithingSkill.getExp() + "/" + smithingSkill.getExpToNextLevel(), x + 10, y + 105,
                 0xFFFFFF);
+                
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

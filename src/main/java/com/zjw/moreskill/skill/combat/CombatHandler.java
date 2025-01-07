@@ -17,8 +17,6 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = MoreSkill.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CombatHandler {
-    // Record the last attack target and time for the player
-    private static final Map<UUID, LastAttackInfo> lastAttackInfoMap = new HashMap<>();
     // Totem of Undying cooldown tracking
     private static final Map<UUID, Long> totemCooldownMap = new HashMap<>();
     // Dodge related data
@@ -28,10 +26,6 @@ public class CombatHandler {
     // Dash related data
     private static final Map<UUID, Long> dashCooldownMap = new HashMap<>();
 
-    // Maximum combo layers
-    private static final int MAX_COMBO_LAYERS = 5;
-    // Combo valid time (in milliseconds)
-    private static final long COMBO_VALID_TIME = 2000;
     // Base cooldown in milliseconds
     private static final long BASE_TOTEM_COOLDOWN = 60000; // 1 minute
     // Cooldown reduction per level (milliseconds)
@@ -47,18 +41,6 @@ public class CombatHandler {
     // Dash related constants
     private static final double BASE_DASH_DISTANCE = 4.0; // Base dash distance
     private static final long DASH_COOLDOWN = 5000; // Dash cooldown time (milliseconds)
-
-    private class LastAttackInfo {
-        LivingEntity target;
-        long lastAttackTime;
-        int comboLayers;
-
-        LastAttackInfo(LivingEntity target, long lastAttackTime) {
-            this.target = target;
-            this.lastAttackTime = lastAttackTime;
-            this.comboLayers = 1;
-        }
-    }
 
     @SubscribeEvent
     public void onEntityHurt(LivingHurtEvent event) {
@@ -170,74 +152,16 @@ public class CombatHandler {
 
         // Check if the attacker is a player
         if (event.getSource().getEntity() instanceof Player player) {
-            LivingEntity target = event.getEntity();
-            long currentTime = System.currentTimeMillis();
-
-            // Get the combat capability of the player
-            player.getCapability(CombatProvider.COMBAT_CAPABILITY).ifPresent(combat -> {
-                // Check if the player has a last attack info
-                LastAttackInfo lastAttackInfo = lastAttackInfoMap.get(player.getUUID());
-
-                // Check if the player's last attack was against the same target and within the combo valid time
-                if (lastAttackInfo != null
-                        && lastAttackInfo.target == target
-                        && currentTime - lastAttackInfo.lastAttackTime <= COMBO_VALID_TIME) {
-
-                    // Increase the combo layers
-                    lastAttackInfo.comboLayers = Math.min(lastAttackInfo.comboLayers + 1, MAX_COMBO_LAYERS);
-                    lastAttackInfo.lastAttackTime = currentTime;
-
-                    // Calculate the extra damage multiplier
-                    float extraDamageMultiplier = calculateExtraDamageMultiplier(combat.getLevel(),
-                            lastAttackInfo.comboLayers);
-                    float originalDamage = event.getAmount();
-                    float finalDamage = originalDamage * (1 + extraDamageMultiplier);
-
-                    // Update the damage amount
-                    event.setAmount(finalDamage);
-
-                    // Add combat experience to the player
-                    combat.addCombatExp(player, 1);
-
-                    // Log the combo attack
-                    MoreSkill.LOGGER.debug("Combo Attack: Layer {}, Extra Damage Multiplier {}",
-                            lastAttackInfo.comboLayers, extraDamageMultiplier);
-                } else {
-                    // Create a new last attack info
-                    lastAttackInfoMap.put(player.getUUID(), new LastAttackInfo(target, currentTime));
-                }
-            });
-        }
-
-        // Check if the attacker is a player
-        if (event.getSource().getEntity() instanceof Player player) {
             // Get the combat capability of the player
             Combat combat = player.getCapability(CombatProvider.COMBAT_CAPABILITY).orElse(null);
             int combatLevel = combat.getLevel();
 
-            // Calculate the extra damage multiplier
-            float extraDamageMultiplier = calculateExtraDamageMultiplier(combatLevel, getComboLayers(player));
-            float originalDamage = event.getAmount();
-            float finalDamage = originalDamage * extraDamageMultiplier;
-
             // Apply life steal
-            applyLifeSteal(player, combatLevel, finalDamage);
+            applyLifeSteal(player, combatLevel, event.getAmount());
 
             // Update the damage amount
-            event.setAmount(finalDamage);
+            event.setAmount(event.getAmount());
         }
-    }
-
-    /**
-     * Calculate the extra damage multiplier based on the combat level and combo layers
-     *
-     * @param combatLevel The combat level of the player
-     * @param comboLayers The number of combo layers
-     * @return The extra damage multiplier
-     */
-    private float calculateExtraDamageMultiplier(int combatLevel, int comboLayers) {
-        // Calculate the extra damage multiplier based on the combat level and combo layers
-        return (combatLevel * 0.01f) * (comboLayers * 0.05f);
     }
 
     /**
@@ -315,16 +239,5 @@ public class CombatHandler {
             float maxHealth = player.getMaxHealth();
             player.setHealth(Math.min(currentHealth + lifeSteal, maxHealth));
         }
-    }
-
-    /**
-     * Get the number of combo layers for the player
-     *
-     * @param player The player
-     * @return The number of combo layers
-     */
-    private int getComboLayers(Player player) {
-        LastAttackInfo lastAttackInfo = lastAttackInfoMap.get(player.getUUID());
-        return lastAttackInfo != null ? lastAttackInfo.comboLayers : 1;
     }
 }

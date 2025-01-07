@@ -1,6 +1,6 @@
 {
   "item.moreskill.forging_hammer_item": "Forging Hammer",
-  "item.moreskill.forging_hammer_item.tooltip": "A hammer that can be used to forge items",
-  "itemGroup.moreskill.more_skill": "More Skill",
-  "key.categories.moreskill": "More Skill"
+  "itemGroup.more_skill": "More Skill",
+  "key.categories.moreskill": "More Skill",
+  "key.moreskill.open_ui": "Open UI"
 }

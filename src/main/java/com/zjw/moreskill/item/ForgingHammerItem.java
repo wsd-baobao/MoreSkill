@@ -27,6 +27,9 @@ public class ForgingHammerItem extends Item {
         if (level.isClientSide()) {
             return InteractionResultHolder.pass(player.getItemInHand(interactionHand));
         }
+        if (player.getUseItemRemainingTicks() > 0) {
+            return InteractionResultHolder.pass(player.getItemInHand(interactionHand));
+        }
         ItemStack mainHandItem = player.getMainHandItem();
         ItemStack offhandItem = player.getOffhandItem();
 

@@ -2,6 +2,7 @@ package com.zjw.moreskill;
 
 import com.zjw.moreskill.item.ModItems;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.registries.DeferredRegister;
@@ -14,6 +15,7 @@ public class MoreSkillTab {
             .register("more_skill", () -> CreativeModeTab.builder()
                     .withTabsBefore(CreativeModeTabs.COMBAT).icon(
                             () -> ModItems.ForgingHammerItem.get().getDefaultInstance())
+                    .title(Component.translatable("itemGroup.more_skill"))
                     .displayItems((parameters, output) -> {
                         // output.accept(ModItems.ForgingHammerItem.get());
                         ModItems.ITEMS.getEntries().stream().map(RegistryObject::get).forEach(output::accept);
