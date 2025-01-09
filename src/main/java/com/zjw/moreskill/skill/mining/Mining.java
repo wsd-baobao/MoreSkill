@@ -1,6 +1,7 @@
 package com.zjw.moreskill.skill.mining;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.util.INBTSerializable;
 
@@ -48,6 +49,9 @@ public class Mining implements INBTSerializable<CompoundTag> {
             System.out.println("没有经验数据");
             setExp(0); // 默认值
         }
+    }
+    public Component getName() {
+        return Component.translatable("skill.moreskill.mining");
     }
 
     private void setExp(int experience) {

@@ -1,14 +1,18 @@
 package com.zjw.moreskill.skill.alchemy;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.util.INBTSerializable;
 
 /**
  * 炼金技能
+ * 目前只有延长药水时间功能
+ * 
  */
-public class Alchemy implements INBTSerializable<CompoundTag>{
-     private int level;
+public class Alchemy implements INBTSerializable<CompoundTag> {
+    private int level;
     private int exp;
+    private static final int MAX_LEVEL = 100;
 
     @Override
     public CompoundTag serializeNBT() {
@@ -34,6 +38,10 @@ public class Alchemy implements INBTSerializable<CompoundTag>{
         }
     }
 
+    public Component getName() {
+        return Component.translatable("skill.moreskill.alchemy");
+    }
+
     public int getLevel() {
         return level;
     }
@@ -48,6 +56,22 @@ public class Alchemy implements INBTSerializable<CompoundTag>{
 
     public void setExp(int exp) {
         this.exp = exp;
+    }
+
+    public void addExp(int i) {
+        this.exp += i;
+        if (this.exp >= getExpForLevel()) {
+            this.exp = 0;
+            int newLevel = this.level + 1;
+            if (newLevel <= MAX_LEVEL) {
+                this.level = newLevel;
+            }
+        }
+
+    }
+
+    public int getExpForLevel() {
+       return (int) (100 * Math.pow(1.1, this.level));
     }
 
 }

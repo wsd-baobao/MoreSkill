@@ -55,15 +55,11 @@ public class Cooking implements INBTSerializable<CompoundTag> {
         }
     }
 
-    /**
-     * 鏍规嵁鐑归オ绛夌骇璁＄畻鐑归オ閫熷害鍔犳垚
-     * Calculate cooking speed multiplier based on cooking skill level
-     * @return 鐑归オ閫熷害鍊嶇巼 (Cooking speed multiplier)
-     */
+    public Component getName() {
+        return Component.translatable("skill.moreskill.cooking");
+    }
     public float getCookingSpeedMultiplier() {
-        // 鏈€澶у姞閫熻嚦鍘熼€熷害鐨?鍊?        // Maximum acceleration up to 2x original speed
-        // 浣跨敤瀵规暟鍑芥暟鏉ュ钩婊戦€熷害澧為暱
-        // Use logarithmic function to smooth speed growth
+        
         return 1f + (float) (Math.log(100 + 1) / Math.log(MAX_LEVEL) * 1f);
     }
 

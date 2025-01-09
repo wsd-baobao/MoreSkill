@@ -1,6 +1,7 @@
 package com.zjw.moreskill.skill.trading;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.util.INBTSerializable;
 
 /**
@@ -33,6 +34,9 @@ public class Trading implements INBTSerializable<CompoundTag> {
             System.out.println("没有经验数据");
             setExp(0); // 默认值
         }
+    }
+    public Component getName() {
+        return Component.translatable("skill.moreskill.trading");
     }
 
     public int getLevel() {

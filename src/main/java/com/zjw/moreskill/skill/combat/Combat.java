@@ -1,6 +1,7 @@
 package com.zjw.moreskill.skill.combat;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 
 /**
  * Represents a player's combat skills and experience.
@@ -48,6 +49,9 @@ public class Combat implements INBTSerializable<CompoundTag> {
             // No experience data found, setting default experience to 0
             setExp(0);
         }
+    }
+    public Component getName() {
+        return Component.translatable("skill.moreskill.combat");
     }
 
     public int getExp() {

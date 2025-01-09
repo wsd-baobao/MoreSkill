@@ -2,5 +2,15 @@
   "item.moreskill.forging_hammer_item": "Forging Hammer",
   "itemGroup.more_skill": "More Skill",
   "key.categories.moreskill": "More Skill",
-  "key.moreskill.open_ui": "Open UI"
+  "key.moreskill.open_ui": "Open UI",
+  "skill.moreskill.alchemy": "Alchemy",
+  "skill.moreskill.combat": "Combat",
+  "skill.moreskill.cooking": "Cooking",
+  "skill.moreskill.farming": "Farming",
+  "skill.moreskill.fishing": "Fishing",
+  "skill.moreskill.magic": "Magic",
+  "skill.moreskill.mining": "Mining",
+  "skill.moreskill.smithing": "Smithing",
+  "skill.moreskill.trading": "Trading",
+  "skill.moreskill.woodcutting": "Woodcutting"
 }

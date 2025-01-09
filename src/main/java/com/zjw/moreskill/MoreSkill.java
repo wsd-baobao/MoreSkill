@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import com.zjw.moreskill.item.ModItems;
 import com.zjw.moreskill.network.NetworkHandler;
 import com.zjw.moreskill.skill.CapabilityEventHandler;
+import com.zjw.moreskill.skill.alchemy.AlchemyHandler;
 import com.zjw.moreskill.skill.combat.CombatHandler;
 import com.zjw.moreskill.skill.cooking.CookingHandler;
 import com.zjw.moreskill.skill.farming.FarmingHandler;
@@ -46,6 +47,7 @@ public class MoreSkill {
         MinecraftForge.EVENT_BUS.register(new FarmingHandler());
         MinecraftForge.EVENT_BUS.register(new CookingHandler());
         MinecraftForge.EVENT_BUS.register(new CombatHandler());
+        MinecraftForge.EVENT_BUS.register(new AlchemyHandler());
         MinecraftForge.EVENT_BUS.register(new CapabilityEventHandler());
         MoreSkillTab.CREATIVE_MODE_TABS.register(modEventBus);
         NetworkHandler.register();

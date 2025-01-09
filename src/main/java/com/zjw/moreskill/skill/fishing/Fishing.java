@@ -2,14 +2,21 @@ package com.zjw.moreskill.skill.fishing;
 
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.Random;
+
+import javax.print.attribute.standard.Compression;
+
+
 
 /*
  * 钓鱼技能类
  */
-public class Fishing implements IFishing {
+public class Fishing implements INBTSerializable<CompoundTag> {
     private int level;
     private int exp;
     private static final int MAX_LEVEL = 100;
@@ -47,7 +54,7 @@ public class Fishing implements IFishing {
         }
     }
 
-    @Override
+    
     public void addExp(Player player, int exp) {
         this.exp += exp;
         int requiredExp = getRequiredExpForNextLevel();
@@ -62,7 +69,11 @@ public class Fishing implements IFishing {
         }
     }
 
-    @Override
+    public Component getName() {
+        return Component.translatable("skill.moreskill.fishing");
+    }
+
+    
     public int numberOfItemsToFish() {
         return new Random().nextInt(Math.min(11, (level / 10) + 2));
     }
@@ -71,29 +82,29 @@ public class Fishing implements IFishing {
         return 100 + (this.level * 50);
     }
 
-    @Override
+  
     public int getLevel() {
         return this.level;
     }
 
 
-    @Override
+ 
     public int getExp() {
         return this.exp;
     }
 
     //返回还差多少经验升级
-    @Override
+  
     public int getExpToNextLevel() {
-        return getRequiredExpForNextLevel() - this.exp;
+        return getRequiredExpForNextLevel();
     }
 
-    @Override
+    
     public void setLevel(int level) {
         this.level = level;
     }
 
-    @Override
+  
     public void setExp(int exp) {
         this.exp = exp;
 

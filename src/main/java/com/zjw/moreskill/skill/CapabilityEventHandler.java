@@ -1,12 +1,17 @@
 package com.zjw.moreskill.skill;
 
 import com.zjw.moreskill.MoreSkill;
+import com.zjw.moreskill.skill.alchemy.AlchemyProvider;
 import com.zjw.moreskill.skill.combat.CombatProvider;
 import com.zjw.moreskill.skill.cooking.CookingProvider;
 import com.zjw.moreskill.skill.farming.FarmingProvider;
 import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
 import com.zjw.moreskill.skill.mining.MiningSkillProvider;
 import com.zjw.moreskill.skill.smithing.SmithingSkillProvider;
+import com.zjw.moreskill.skill.trading.TradingProvider;
+import com.zjw.moreskill.skill.woodcutting.WoodCutting;
+import com.zjw.moreskill.skill.woodcutting.WoodCuttingProvider;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -37,8 +42,12 @@ public class CapabilityEventHandler {
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "farming_skill"), new FarmingProvider());
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "cooking_skill"), new CookingProvider());
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "combat_skill"), new CombatProvider());
+            event.addCapability(new ResourceLocation(MoreSkill.MODID, "alchemy_skill"), new AlchemyProvider());
+            event.addCapability(new ResourceLocation(MoreSkill.MODID, "trading_skill"), new TradingProvider());
+            event.addCapability(new ResourceLocation(MoreSkill.MODID, "woodcutting_skill"), new WoodCuttingProvider());
         }
     }
+
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         System.out.println("onPlayerLoggedIn");
@@ -50,7 +59,11 @@ public class CapabilityEventHandler {
         deserializeSkill(player, FarmingProvider.FARMING_CAPABILITY, persistentData, "farming_skill");
         deserializeSkill(player, CookingProvider.COOKING_CAPABILITY, persistentData, "cooking_skill");
         deserializeSkill(player, CombatProvider.COMBAT_CAPABILITY, persistentData, "combat_skill");
+        deserializeSkill(player, AlchemyProvider.ALCHEMY_CAPABILITY, persistentData, "alchemy_skill");
+        deserializeSkill(player, TradingProvider.TRADING_CAPABILITY, persistentData, "trading_skill");
+        deserializeSkill(player, WoodCuttingProvider.WOODCUTTING_CAPABILITY, persistentData, "woodcutting_skill");
     }
+
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         Player player = event.getEntity();
@@ -60,6 +73,9 @@ public class CapabilityEventHandler {
         saveSkillData(player, FarmingProvider.FARMING_CAPABILITY, "farming_skill");
         saveSkillData(player, CookingProvider.COOKING_CAPABILITY, "cooking_skill");
         saveSkillData(player, CombatProvider.COMBAT_CAPABILITY, "combat_skill");
+        saveSkillData(player, AlchemyProvider.ALCHEMY_CAPABILITY, "alchemy_skill");
+        saveSkillData(player, TradingProvider.TRADING_CAPABILITY, "trading_skill");
+        saveSkillData(player, WoodCuttingProvider.WOODCUTTING_CAPABILITY, "woodcutting_skill");
     }
 
     @SubscribeEvent
@@ -72,10 +88,14 @@ public class CapabilityEventHandler {
             saveSkillData(player, FarmingProvider.FARMING_CAPABILITY, "farming_skill");
             saveSkillData(player, CookingProvider.COOKING_CAPABILITY, "cooking_skill");
             saveSkillData(player, CombatProvider.COMBAT_CAPABILITY, "combat_skill");
+            saveSkillData(player, AlchemyProvider.ALCHEMY_CAPABILITY, "alchemy_skill");
+            saveSkillData(player, TradingProvider.TRADING_CAPABILITY, "trading_skill");
+            saveSkillData(player, WoodCuttingProvider.WOODCUTTING_CAPABILITY, "woodcutting_skill");
         }
     }
 
-    private void deserializeSkill(Player player, Capability<? extends INBTSerializable<CompoundTag>> skillCapability, CompoundTag persistentData, String skillKey) {
+    private void deserializeSkill(Player player, Capability<? extends INBTSerializable<CompoundTag>> skillCapability,
+            CompoundTag persistentData, String skillKey) {
         player.getCapability(skillCapability).ifPresent(skill -> {
             if (persistentData.contains(skillKey, Tag.TAG_COMPOUND)) {
                 skill.deserializeNBT(persistentData.getCompound(skillKey));
@@ -85,12 +105,12 @@ public class CapabilityEventHandler {
         });
     }
 
-    private void saveSkillData(Player player, Capability<? extends INBTSerializable<CompoundTag>> skillProvider, String key) {
+    private void saveSkillData(Player player, Capability<? extends INBTSerializable<CompoundTag>> skillProvider,
+            String key) {
         player.getCapability(skillProvider).ifPresent(skill -> {
             CompoundTag compoundTag = skill.serializeNBT();
             player.getPersistentData().put(key, compoundTag);
-           
-            System.out.println("Saved " + key + " data for player: " + player.getName().getString());
+            MoreSkill.LOGGER.info("Saved skill data for key: {}", key);
         });
     }
 }

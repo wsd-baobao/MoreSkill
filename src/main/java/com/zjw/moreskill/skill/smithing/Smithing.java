@@ -1,6 +1,7 @@
 package com.zjw.moreskill.skill.smithing;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.util.INBTSerializable;
 
 /**
@@ -49,6 +50,9 @@ public class Smithing implements INBTSerializable<CompoundTag> {
             setExp(0); // 默认值
         }
     }
+    public Component getName() {
+        return Component.translatable("skill.moreskill.smithing");
+    }
 
     public int getLevel() {
         return level;
@@ -72,10 +76,10 @@ public class Smithing implements INBTSerializable<CompoundTag> {
      * @param level 当前等级
      * @return 升级所需经验
      */
-    public static int getExpForLevel(int level) {
+    public int getExpForLevel() {
         return (int)(BASE_EXP * 
-                    (1 + level * LEVEL_SCALING) * 
-                    Math.pow(EXPONENTIAL_SCALING, level));
+                    (1 + this.level * LEVEL_SCALING) * 
+                    Math.pow(EXPONENTIAL_SCALING, this.level));
     }
 
     /**
@@ -91,7 +95,7 @@ public class Smithing implements INBTSerializable<CompoundTag> {
         
         // 检查是否可以升级
         while (level < MAX_LEVEL) {
-            int requiredExp = getExpForLevel(level);
+            int requiredExp = getExpForLevel();
             if (exp < requiredExp) {
                 break;
             }
@@ -115,7 +119,7 @@ public class Smithing implements INBTSerializable<CompoundTag> {
         if (level >= MAX_LEVEL) {
             return 100;
         }
-        return (exp * 100.0f) / getExpForLevel(level);
+        return (exp * 100.0f) / getExpForLevel();
     }
 
     /**
@@ -126,6 +130,6 @@ public class Smithing implements INBTSerializable<CompoundTag> {
         if (level >= MAX_LEVEL) {
             return 0;
         }
-        return getExpForLevel(level) - exp;
+        return getExpForLevel() - exp;
     }
 }
