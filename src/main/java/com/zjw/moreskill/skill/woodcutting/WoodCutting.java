@@ -10,6 +10,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 public class WoodCutting implements INBTSerializable<CompoundTag> {
 
+    private static final int MAX_LEVEL = 100;
     private int level;
     private int exp;
 
@@ -56,6 +57,20 @@ public class WoodCutting implements INBTSerializable<CompoundTag> {
         this.exp = exp;
     }
 
-    
 
+    public void addExp(int exp) {
+
+        this.exp += exp;
+        if (this.exp >= getExpForLevel()) {
+            this.exp = 0;
+            int newLevel = this.level + 1;
+            if (newLevel <= MAX_LEVEL) {
+                this.level = newLevel;
+            }
+        }
+    }
+
+    public int getExpForLevel() {
+        return (int) (100 * Math.pow(1.1, this.level));
+    }
 }

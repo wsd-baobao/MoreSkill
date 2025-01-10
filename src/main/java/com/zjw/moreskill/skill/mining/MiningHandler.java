@@ -44,7 +44,8 @@ public class MiningHandler {
                     ItemStack drop = drops.get(i);
                     if (!drop.isEmpty()) {
                         ItemEntity itemEntity = new ItemEntity(player.level(), pos.getX(), pos.getY() + 1, pos.getZ(), drop);
-                        itemEntity.setUnlimitedLifetime();
+                        itemEntity.setDefaultPickUpDelay();
+                        // itemEntity.setUnlimitedLifetime();
                         world.addFreshEntity(itemEntity);
                     }
                 }

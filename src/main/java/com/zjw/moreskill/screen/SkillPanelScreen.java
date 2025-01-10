@@ -134,7 +134,7 @@ public class SkillPanelScreen extends Screen {
             farmingSkill != null ? farmingSkill.getExpForLevel() : 0,
 
             tradingSkill != null ? tradingSkill.getExpForNextLevel() : 0,
-            woodCuttingSkill != null ? woodCuttingSkill.getExp() : 0,
+            woodCuttingSkill != null ? woodCuttingSkill.getExpForLevel() : 0,
             alchemySkill != null ? alchemySkill.getExpForLevel() : 0,
             // magicSkill != null ? magicSkill.getExp() : 0
         };
