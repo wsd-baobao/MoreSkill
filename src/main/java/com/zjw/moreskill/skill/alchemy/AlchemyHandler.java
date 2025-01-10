@@ -15,9 +15,11 @@ import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.brewing.PlayerBrewedPotionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -163,6 +165,27 @@ public class AlchemyHandler {
                     }
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onItemtooltip(ItemTooltipEvent event) {
+        ItemStack itemStack = event.getItemStack();
+        List<Component> toolTip = event.getToolTip();
+        CompoundTag itemTag = itemStack.getOrCreateTag();
+        
+        if (itemStack.getItem() instanceof PotionItem && 
+            itemTag.contains(AlchemyNBTManager.ALCHEMY_TIME)) {
+            
+            int durationLevel = itemTag.getInt(AlchemyNBTManager.ALCHEMY_TIME);
+            
+            // Convert duration level to minutes
+            Component durationComponent = Component.translatable(
+                "moreskill.alchemy.duration_increase", 
+                durationLevel
+            );
+            
+            toolTip.add(durationComponent);
         }
     }
 }

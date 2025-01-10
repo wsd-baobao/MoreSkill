@@ -26,5 +26,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("skill.moreskill.mining", "Mining");
         add("skill.moreskill.alchemy", "Alchemy");
         add("skill.moreskill.magic","Magic" );
+
+        add("moreskill.alchemy.duration_increase", "Potion Duration: +%d minutes");
     }
 }

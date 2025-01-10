@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "package": "com.zjw.moreskill.mixin",
   "mixins": [
+    "trading.TradingAddExp"
   ],
   "injectors": {
     "defaultRequire": 1

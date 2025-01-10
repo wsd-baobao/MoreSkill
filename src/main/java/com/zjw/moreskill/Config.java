@@ -56,7 +56,6 @@ public class Config {
         }
         return list;
     }
-
     static final ForgeConfigSpec SPEC = BUILDER.build();
 //
 //    public static boolean logDirtBlock;

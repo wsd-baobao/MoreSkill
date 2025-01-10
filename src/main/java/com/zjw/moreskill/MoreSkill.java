@@ -1,5 +1,6 @@
 package com.zjw.moreskill;
 
+import com.zjw.moreskill.skill.woodcutting.WoodCuttingHandler;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -13,6 +14,9 @@ import com.zjw.moreskill.skill.farming.FarmingHandler;
 import com.zjw.moreskill.skill.fishing.FishingHandler;
 import com.zjw.moreskill.skill.mining.MiningHandler;
 import com.zjw.moreskill.skill.smithing.SmithingHandler;
+import com.zjw.moreskill.skill.trading.TradingHandler;
+import com.zjw.moreskill.skill.woodcutting.WoodCutting;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -48,6 +52,8 @@ public class MoreSkill {
         MinecraftForge.EVENT_BUS.register(new CookingHandler());
         MinecraftForge.EVENT_BUS.register(new CombatHandler());
         MinecraftForge.EVENT_BUS.register(new AlchemyHandler());
+        MinecraftForge.EVENT_BUS.register(new TradingHandler());
+        MinecraftForge.EVENT_BUS.register(new WoodCuttingHandler());
         MinecraftForge.EVENT_BUS.register(new CapabilityEventHandler());
         MoreSkillTab.CREATIVE_MODE_TABS.register(modEventBus);
         NetworkHandler.register();
