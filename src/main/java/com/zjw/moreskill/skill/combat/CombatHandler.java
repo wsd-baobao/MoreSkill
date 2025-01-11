@@ -14,17 +14,17 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Mod.EventBusSubscriber(modid = MoreSkill.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CombatHandler {
     // Totem of Undying cooldown tracking
-    private static final Map<UUID, Long> totemCooldownMap = new HashMap<>();
+    private static final Map<UUID, Long> totemCooldownMap = new ConcurrentHashMap<>();
     // Dodge related data
-    private static final Map<UUID, Long> dodgeCooldownMap = new HashMap<>();
+    private static final Map<UUID, Long> dodgeCooldownMap = new ConcurrentHashMap<>();
     // Parry related data
-    private static final Map<UUID, Long> parryCooldownMap = new HashMap<>();
-    // Dash related data
-    private static final Map<UUID, Long> dashCooldownMap = new HashMap<>();
+    private static final Map<UUID, Long> parryCooldownMap = new ConcurrentHashMap<>();
+
 
     // Base cooldown in milliseconds
     private static final long BASE_TOTEM_COOLDOWN = 60000; // 1 minute
@@ -38,9 +38,7 @@ public class CombatHandler {
     private static final double BASE_PARRY_CHANCE = 0.1; // Base parry chance
     private static final double MAX_PARRY_CHANCE = 0.6; // Maximum parry chance
     private static final long PARRY_COOLDOWN = 1500; // Parry cooldown time (milliseconds)
-    // Dash related constants
-    private static final double BASE_DASH_DISTANCE = 4.0; // Base dash distance
-    private static final long DASH_COOLDOWN = 5000; // Dash cooldown time (milliseconds)
+
 
     @SubscribeEvent
     public void onEntityHurt(LivingHurtEvent event) {
@@ -50,9 +48,9 @@ public class CombatHandler {
                 long currentTime = System.currentTimeMillis();
                 long cooldown = calculateTotemCooldown(combat.getLevel());
                 Long lastTotemUseTime = totemCooldownMap.get(player.getUUID());
-
+                combat.addCombatExp(1);
                 // Check if the player can use the Totem of Undying skill
-                if (lastTotemUseTime == null || currentTime - lastTotemUseTime >= cooldown) {
+                if (combat.getLevel() > 50 && (lastTotemUseTime == null || currentTime - lastTotemUseTime >= cooldown)) {
                     // Check if the player's health is low enough to trigger the skill
                     if (player.getHealth() <= event.getAmount()) {
                         // Activate the Totem of Undying skill
@@ -71,7 +69,7 @@ public class CombatHandler {
                         totemCooldownMap.put(player.getUUID(), currentTime);
 
                         // Add combat experience to the player
-                        combat.addCombatExp(player, 10);
+                        combat.addCombatExp( 10);
 
                         // Cancel the hurt event
                         event.setCanceled(true);
@@ -81,7 +79,6 @@ public class CombatHandler {
                                 player.getName().getString(), combat.getLevel());
                     }
                 }
-
                 // Check if the player can parry the attack
                 Long lastParryTime = parryCooldownMap.get(player.getUUID());
 
@@ -101,7 +98,7 @@ public class CombatHandler {
                         parryCooldownMap.put(player.getUUID(), currentTime);
 
                         // Add combat experience to the player
-                        combat.addCombatExp(player, 7);
+                        combat.addCombatExp( 7);
 
                         // Check if the attacker is a living entity
                         if (event.getSource().getEntity() instanceof LivingEntity attacker) {
@@ -138,7 +135,7 @@ public class CombatHandler {
                         dodgeCooldownMap.put(player.getUUID(), currentTime);
 
                         // Add combat experience to the player
-                        combat.addCombatExp(player, 5);
+                        combat.addCombatExp( 5);
 
                         // Log the successful dodge
                         MoreSkill.LOGGER.info("Player {} successfully dodged an attack at combat level {}",
@@ -155,13 +152,13 @@ public class CombatHandler {
             // Get the combat capability of the player
             Combat combat = player.getCapability(CombatProvider.COMBAT_CAPABILITY).orElse(null);
             int combatLevel = combat.getLevel();
-
+            combat.addCombatExp(1);
             // Apply life steal
             applyLifeSteal(player, combatLevel, event.getAmount());
-
             // Update the damage amount
             event.setAmount(event.getAmount());
         }
+    
     }
 
     /**

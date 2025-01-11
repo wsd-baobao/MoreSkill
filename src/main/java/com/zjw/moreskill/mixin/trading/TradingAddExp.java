@@ -20,12 +20,12 @@ public class TradingAddExp {
     private void addTradingExp(MerchantOffer merchantOffer, CallbackInfo ci) {
         Villager villager = (Villager) (Object) this;
         Player player = villager.getTradingPlayer(); // 获取当前交易的玩家
-
+        MoreSkill.LOGGER.info("执行了");
         if (player != null && !villager.level().isClientSide()) {
             player.getCapability(TradingProvider.TRADING_CAPABILITY).ifPresent(trading -> {
                 int expGain = 3; // 每次交易固定获得3点经验
                 trading.addExp(expGain);
-//                MoreSkill.LOGGER.info("Trading Exp Gained: {}", expGain);
+               MoreSkill.LOGGER.info("Trading Exp Gained: {}", expGain);
             });
         }
     }

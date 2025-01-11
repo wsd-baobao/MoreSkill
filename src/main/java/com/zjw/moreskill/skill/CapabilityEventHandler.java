@@ -9,14 +9,14 @@ import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
 import com.zjw.moreskill.skill.mining.MiningSkillProvider;
 import com.zjw.moreskill.skill.smithing.SmithingSkillProvider;
 import com.zjw.moreskill.skill.trading.TradingProvider;
-import com.zjw.moreskill.skill.woodcutting.WoodCutting;
 import com.zjw.moreskill.skill.woodcutting.WoodCuttingProvider;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -24,6 +24,11 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,16 +57,15 @@ public class CapabilityEventHandler {
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         System.out.println("onPlayerLoggedIn");
         Player player = event.getEntity();
-        CompoundTag persistentData = player.getPersistentData();
-        deserializeSkill(player, FishingSkillProvider.FISHING_SKILL, persistentData, "fishing_skill");
-        deserializeSkill(player, MiningSkillProvider.MINING_SKILL, persistentData, "mining_skill");
-        deserializeSkill(player, SmithingSkillProvider.SMITHING_SKILL, persistentData, "smithing_skill");
-        deserializeSkill(player, FarmingProvider.FARMING_CAPABILITY, persistentData, "farming_skill");
-        deserializeSkill(player, CookingProvider.COOKING_CAPABILITY, persistentData, "cooking_skill");
-        deserializeSkill(player, CombatProvider.COMBAT_CAPABILITY, persistentData, "combat_skill");
-        deserializeSkill(player, AlchemyProvider.ALCHEMY_CAPABILITY, persistentData, "alchemy_skill");
-        deserializeSkill(player, TradingProvider.TRADING_CAPABILITY, persistentData, "trading_skill");
-        deserializeSkill(player, WoodCuttingProvider.WOODCUTTING_CAPABILITY, persistentData, "woodcutting_skill");
+        deserializeSkill(player, FishingSkillProvider.FISHING_SKILL, "fishing_skill");
+        deserializeSkill(player, MiningSkillProvider.MINING_SKILL, "mining_skill");
+        deserializeSkill(player, SmithingSkillProvider.SMITHING_SKILL, "smithing_skill");
+        deserializeSkill(player, FarmingProvider.FARMING_CAPABILITY, "farming_skill");
+        deserializeSkill(player, CookingProvider.COOKING_CAPABILITY, "cooking_skill");
+        deserializeSkill(player, CombatProvider.COMBAT_CAPABILITY, "combat_skill");
+        deserializeSkill(player, AlchemyProvider.ALCHEMY_CAPABILITY, "alchemy_skill");
+        deserializeSkill(player, TradingProvider.TRADING_CAPABILITY, "trading_skill");
+        deserializeSkill(player, WoodCuttingProvider.WOODCUTTING_CAPABILITY, "woodcutting_skill");
     }
 
     @SubscribeEvent
@@ -94,23 +98,57 @@ public class CapabilityEventHandler {
         }
     }
 
-    private void deserializeSkill(Player player, Capability<? extends INBTSerializable<CompoundTag>> skillCapability,
-            CompoundTag persistentData, String skillKey) {
-        player.getCapability(skillCapability).ifPresent(skill -> {
-            if (persistentData.contains(skillKey, Tag.TAG_COMPOUND)) {
-                skill.deserializeNBT(persistentData.getCompound(skillKey));
-            } else {
-                logger.warn("Missing skill data for key: {}", skillKey);
+   
+     /**
+     * 从存档文件中加载技能数据
+     */
+    private void deserializeSkill(Player player, Capability<? extends INBTSerializable<CompoundTag>> skillCapability, String skillKey) {
+
+        if (player.level().isClientSide) {
+            return; // 在客户端不执行保存逻辑
+        }
+
+        Path savePath = player.level().getServer().getWorldPath(LevelResource.ROOT).resolve("moreskill");
+        File skillFile = savePath.resolve(player.getUUID().toString() + "_" + skillKey + ".dat").toFile();
+
+        if (skillFile.exists()) {
+            try {
+                CompoundTag nbt = NbtIo.readCompressed(skillFile);
+                if (nbt != null) {
+                    player.getCapability(skillCapability).ifPresent(skill -> skill.deserializeNBT(nbt));
+                }
+            } catch (IOException e) {
+                logger.error("Failed to load skill data for {}: {}", skillKey, e.getMessage());
             }
-        });
+        } else {
+            // 文件不存在时，初始化默认数据
+            logger.info("Skill data file not found for {}: {}. Initializing default data.", skillKey, skillFile.getPath());
+            player.getCapability(skillCapability).ifPresent(skill -> {
+                skill.deserializeNBT(new CompoundTag()); // 初始化默认数据
+                saveSkillData(player, skillCapability, skillKey); // 保存默认数据
+            });
+        }
     }
 
-    private void saveSkillData(Player player, Capability<? extends INBTSerializable<CompoundTag>> skillProvider,
-            String key) {
+      /**
+     * 将技能数据保存到存档文件中
+     */
+    private void saveSkillData(Player player, Capability<? extends INBTSerializable<CompoundTag>> skillProvider, String skillKey) {
+        if (player.level().isClientSide) {
+            return; // 在客户端不执行保存逻辑
+        }
+        Path savePath = player.level().getServer().getWorldPath(LevelResource.ROOT).resolve("moreskill");
+        File skillFile = savePath.resolve(player.getUUID().toString() + "_" + skillKey + ".dat").toFile();
+
+        // 确保文件夹存在
+        skillFile.getParentFile().mkdirs();
         player.getCapability(skillProvider).ifPresent(skill -> {
-            CompoundTag compoundTag = skill.serializeNBT();
-            player.getPersistentData().put(key, compoundTag);
-            MoreSkill.LOGGER.info("Saved skill data for key: {}", key);
+            CompoundTag nbt = skill.serializeNBT();
+            try {
+                NbtIo.writeCompressed(nbt, skillFile);
+            } catch (IOException e) {
+                logger.error("Failed to save skill data for {}: {}", skillKey, e.getMessage());
+            }
         });
     }
 }

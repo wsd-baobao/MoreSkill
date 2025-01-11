@@ -36,7 +36,7 @@ public class WoodCuttingHandler {
             if (isLogBlock(state.getBlock())){
                 // 根据等级增加经验，经验数量为等级/10
                 int expGain = woodcutting.getLevel() / 10;
-                woodcutting.addExp(expGain);
+                woodcutting.addExp(Math.max(1,expGain));
                 player.giveExperiencePoints(expGain);
                 // 计算并生成额外掉落物
                 int extraDropCount = calculateExtraDrops(woodcutting.getLevel(), new Random());

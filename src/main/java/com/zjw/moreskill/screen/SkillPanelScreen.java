@@ -85,12 +85,12 @@ public class SkillPanelScreen extends Screen {
         
         // Skill grid layout
         String[] skillNames = {
-            farmingSkill != null ? farmingSkill.getName().getString() : "Farming",
+            fishingSkill != null ? fishingSkill.getName().getString() : "Fishing",
             miningSkill != null ? miningSkill.getName().getString() : "Mining",
             smithingSkill != null ? smithingSkill.getName().getString() : "Smithing",
             combatSkill != null ? combatSkill.getName().getString() : "Combat",
             cookingSkill != null ? cookingSkill.getName().getString() : "Cooking",
-            fishingSkill != null ? fishingSkill.getName().getString() : "Fishing",
+            farmingSkill != null ? farmingSkill.getName().getString() : "Farming",
             tradingSkill != null ? tradingSkill.getName().getString() : "Trading",
             woodCuttingSkill != null ? woodCuttingSkill.getName().getString() : "Woodcutting",
             alchemySkill != null ? alchemySkill.getName().getString() : "Alchemy",

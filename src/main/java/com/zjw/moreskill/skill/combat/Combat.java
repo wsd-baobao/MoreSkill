@@ -50,6 +50,7 @@ public class Combat implements INBTSerializable<CompoundTag> {
             setExp(0);
         }
     }
+
     public Component getName() {
         return Component.translatable("skill.moreskill.combat");
     }
@@ -72,13 +73,12 @@ public class Combat implements INBTSerializable<CompoundTag> {
 
     /**
      * Adds combat experience points to the player.
-     * @param player the player to add experience to
+     *
      * @param exp the amount of experience to add
      */
-    public void addCombatExp(Player player, int exp) {
+    public void addCombatExp(int exp) {
         this.exp += exp;
-        
-              int requiredExp = getRequiredExpForNextLevel();
+        int requiredExp = getRequiredExpForNextLevel();
         while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
             this.level++;
             this.exp = 0;
@@ -88,6 +88,7 @@ public class Combat implements INBTSerializable<CompoundTag> {
 
     /**
      * Calculates the required experience points for the next level.
+     *
      * @return the required experience points
      */
     public int getRequiredExpForNextLevel() {
