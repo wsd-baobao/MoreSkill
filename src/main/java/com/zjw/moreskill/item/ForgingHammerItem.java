@@ -27,13 +27,11 @@ public class ForgingHammerItem extends Item {
         if (level.isClientSide()) {
             return InteractionResultHolder.pass(player.getItemInHand(interactionHand));
         }
-        if (player.getUseItemRemainingTicks() > 0) {
-            return InteractionResultHolder.pass(player.getItemInHand(interactionHand));
-        }
         ItemStack mainHandItem = player.getMainHandItem();
         ItemStack offhandItem = player.getOffhandItem();
 
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ANVIL_USE, SoundSource.PLAYERS,
+                1.0F, 1.0F);
         if (offhandItem.isEmpty()) {
             return InteractionResultHolder.success(mainHandItem);
         }
@@ -48,60 +46,66 @@ public class ForgingHammerItem extends Item {
         if (!offhandItem.getOrCreateTag().contains(SmithingNBTManager.AUTHOR)) {
             int expGain = 0;
             int smithinglevel = smithing.getLevel();
-            
-            if (offhandItem.getItem() instanceof SwordItem || 
-            offhandItem.getItem() instanceof TridentItem) {
+
+            if (offhandItem.getItem() instanceof SwordItem ||
+                    offhandItem.getItem() instanceof TridentItem) {
                 // 攻击伤害：等级/3（最高33）
-                setNBT(offhandItem, SmithingNBTManager.ATTACK_DAMAGE, smithinglevel/3);
+                setNBT(offhandItem, SmithingNBTManager.ATTACK_DAMAGE, smithinglevel / 3);
                 // 攻击速度：等级/10（最高10）
-                setNBT(offhandItem, SmithingNBTManager.ATTACK_SPEED, smithinglevel/10);
+                setNBT(offhandItem, SmithingNBTManager.ATTACK_SPEED, smithinglevel / 10);
                 // 耐久度：等级*300（最高30000）
-                setNBT(offhandItem, SmithingNBTManager.DURABILITY, smithinglevel*300);
-                // 修复效率：等级*300（与耐久相同）
-                setNBT(offhandItem, SmithingNBTManager.MAX_MENDING, smithinglevel*300);
+                setNBT(offhandItem, SmithingNBTManager.DURABILITY, smithinglevel * 300);
+                // 最大修复值：等级*300（与耐久相同）
+                setNBT(offhandItem, SmithingNBTManager.MAX_MENDING, smithinglevel * 300);
                 // 暴击率：等级/4（最高25）
-                setNBT(offhandItem, SmithingNBTManager.CRITICAL_STRIKE_CHANCE, smithinglevel/4);
+                setNBT(offhandItem, SmithingNBTManager.CRITICAL_STRIKE_CHANCE, smithinglevel / 4);
                 setAuthorNBT(offhandItem, SmithingNBTManager.AUTHOR, playerName);
                 expGain = 20;
             }
             if (offhandItem.getItem() instanceof DiggerItem) {
                 // 耐久度：等级*300
-                setNBT(offhandItem, SmithingNBTManager.DURABILITY, smithinglevel*300);
+                setNBT(offhandItem, SmithingNBTManager.DURABILITY, smithinglevel * 300);
                 // 挖掘速度：等级/5（最高20）
-                setNBT(offhandItem, SmithingNBTManager.BREAK_SPEED, smithinglevel/5);
+                setNBT(offhandItem, SmithingNBTManager.BREAK_SPEED, smithinglevel / 5);
                 // 修复效率：等级*300（与耐久相同）
-                setNBT(offhandItem, SmithingNBTManager.MAX_MENDING, smithinglevel*300);
+                setNBT(offhandItem, SmithingNBTManager.MAX_MENDING, smithinglevel * 300);
                 setAuthorNBT(offhandItem, SmithingNBTManager.AUTHOR, playerName);
                 expGain = 15;
             }
             if (offhandItem.getItem() instanceof ArmorItem) {
                 // 护甲值：等级/4（最高25）
-                setNBT(offhandItem, SmithingNBTManager.ARMOR, smithinglevel/4);
+                setNBT(offhandItem, SmithingNBTManager.ARMOR, smithinglevel / 4);
                 // 护甲韧性：等级/8（最高12）
-                setNBT(offhandItem, SmithingNBTManager.ARMOR_TOUGHNESS, smithinglevel/8);
+                setNBT(offhandItem, SmithingNBTManager.ARMOR_TOUGHNESS, smithinglevel / 8);
                 // 击退抗性：等级/20（最高5）
-                setNBT(offhandItem, SmithingNBTManager.KNOCKBACK_RESISTANCE, smithinglevel/20);
+                setNBT(offhandItem, SmithingNBTManager.KNOCKBACK_RESISTANCE, smithinglevel / 20);
                 // 生命值加成：等级/10（最高10）
-                setNBT(offhandItem, SmithingNBTManager.MAX_HEALTH, smithinglevel/10);
+                if (smithinglevel >= 50) {
+                    setNBT(offhandItem, SmithingNBTManager.MAX_HEALTH, Math.max(1,(smithinglevel - 50) / 5));
+                }
                 // 吸收值：从0开始累积
-                setNBT(offhandItem, SmithingNBTManager.ABSORPTION, 0);
-                // 荆棘：等级/10（最高10）
-                setNBT(offhandItem, SmithingNBTManager.THORNS, smithinglevel/10);
+                if (smithinglevel >= 80) {
+                    setNBT(offhandItem, SmithingNBTManager.ABSORPTION, 0);
+                }
+                // 荆棘：最低50级能够添加，之后每10级增加1点（最高10）
+                if (smithinglevel >= 50) {
+                    setNBT(offhandItem, SmithingNBTManager.THORNS, Math.min((smithinglevel - 50) / 5 + 1, 10));
+                }
                 // 耐久度：等级*300（最高30000）
-                setNBT(offhandItem, SmithingNBTManager.DURABILITY, smithinglevel*300);
+                setNBT(offhandItem, SmithingNBTManager.DURABILITY, smithinglevel * 300);
                 // 修复效率：等级*300（与耐久相同）
-                setNBT(offhandItem, SmithingNBTManager.MAX_MENDING, smithinglevel*300);
+                setNBT(offhandItem, SmithingNBTManager.MAX_MENDING, smithinglevel * 300);
                 setAuthorNBT(offhandItem, SmithingNBTManager.AUTHOR, playerName);
                 expGain = 25;
             }
-            if (offhandItem.getItem() instanceof BowItem || 
-                offhandItem.getItem() instanceof CrossbowItem ) {
-                setNBT(offhandItem, SmithingNBTManager.ATTACK_DAMAGE, smithinglevel/3);
+            if (offhandItem.getItem() instanceof BowItem ||
+                    offhandItem.getItem() instanceof CrossbowItem) {
+                setNBT(offhandItem, SmithingNBTManager.ATTACK_DAMAGE, smithinglevel / 3);
                 // 远程武器属性
                 // 耐久度：等级*300
-                setNBT(offhandItem, SmithingNBTManager.DURABILITY, smithinglevel*300);
+                setNBT(offhandItem, SmithingNBTManager.DURABILITY, smithinglevel * 300);
                 // 修复效率：等级*300（与耐久相同）
-                setNBT(offhandItem, SmithingNBTManager.MAX_MENDING, smithinglevel*300);
+                setNBT(offhandItem, SmithingNBTManager.MAX_MENDING, smithinglevel * 300);
                 setAuthorNBT(offhandItem, SmithingNBTManager.AUTHOR, playerName);
                 expGain = 15;
             }
@@ -109,8 +113,8 @@ public class ForgingHammerItem extends Item {
             // 增加经验并通知玩家
             if (expGain > 0) {
                 smithing.addExp(expGain);
-                player.displayClientMessage(Component.literal("锻造等级: " + smithinglevel + 
-                    " (+" + expGain + "经验)").withStyle(ChatFormatting.GREEN), true);
+                player.displayClientMessage(Component.translatable("message.moreskill.smithing_exp_gain", expGain).withStyle(ChatFormatting.GREEN), true);
+                        
             }
             return InteractionResultHolder.success(mainHandItem);
         }

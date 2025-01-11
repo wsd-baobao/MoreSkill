@@ -1,6 +1,7 @@
 package com.zjw.moreskill.skill.fishing;
 
 import com.zjw.moreskill.MoreSkill;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -52,7 +53,7 @@ public class FishingHandler {
             int experienceGained = drops.size();
             // 增加经验
             fishing.addExp(player, experienceGained);
-            System.out.println("经验增加了");
+            player.displayClientMessage(Component.translatable("message.moreskill.fishing_exp_gain", experienceGained), true);
             System.out.println(fishing.getExp());
         });
 

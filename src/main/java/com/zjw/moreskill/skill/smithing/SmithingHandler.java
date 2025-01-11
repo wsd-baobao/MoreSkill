@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static com.google.common.collect.Iterables.concat;
 
@@ -43,7 +44,7 @@ import static com.google.common.collect.Iterables.concat;
 public class SmithingHandler {
 
     private static final UUID ATTACK_SPEED_MODIFIER_ID = UUID.fromString("36e6640b-3968-43b2-9406-b5886092f17a");
-    
+
     // 为每个装备槽位定义唯一的UUID
     private static final Map<EquipmentSlot, UUID> MAX_HEALTH_MODIFIER_IDS = new HashMap<>() {{
         put(EquipmentSlot.HEAD, UUID.fromString("9d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1a"));
@@ -51,11 +52,12 @@ public class SmithingHandler {
         put(EquipmentSlot.LEGS, UUID.fromString("7d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1c"));
         put(EquipmentSlot.FEET, UUID.fromString("6d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1d"));
     }};
+
     @SubscribeEvent
     public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
         Player player = event.getEntity();
         ItemStack craftedItem = event.getCrafting();
-        
+
         // 检查是否是武器、工具或盔甲
         if (craftedItem.getItem() instanceof TieredItem || craftedItem.getItem() instanceof ArmorItem) {
             // 获取玩家的锻造技能
@@ -70,10 +72,10 @@ public class SmithingHandler {
                 } else {
                     expGain = 10; // 工具给予30经验
                 }
-                
+
                 // 增加经验并通知玩家
                 smithing.addExp(expGain);
-                player.displayClientMessage(Component.literal("锻造经验 +" + expGain).withStyle(ChatFormatting.GREEN), true);
+                player.displayClientMessage(Component.translatable("message.moreskill.smithing_exp_gain", expGain).withStyle(ChatFormatting.GREEN), true);
             }
         }
     }
@@ -150,7 +152,7 @@ public class SmithingHandler {
                         // 移除该槽位的旧修饰器
                         UUID modifierId = MAX_HEALTH_MODIFIER_IDS.get(slot);
                         maxHealthAttribute.removeModifier(modifierId);
-                        
+
                         // 检查新装备是否有最大生命值加成
                         ItemStack newArmor = event.getTo();
                         if (!newArmor.isEmpty() && newArmor.hasTag() && newArmor.getTag().contains(SmithingNBTManager.MAX_HEALTH)) {
@@ -188,13 +190,13 @@ public class SmithingHandler {
     // 辅助方法：移除盔甲和其他修饰器
     private static void removeArmorModifiers(Player player) {
         UUID[] modifierIds = {
-            UUID.fromString("7f3b3b5a-1e8f-4a1c-9e5c-3b1c9f3b5a1e"),   // 盔甲修饰器
-            UUID.fromString("8f4c4c6b-2f9f-5b2d-ad5c-4d2c8f4c6b2f"),   // 盔甲韧性修饰器
-            UUID.fromString("9d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1a"),   // 最大生命值修饰器
-            UUID.fromString("5a3b1c2d-6f8e-4d9c-b2a1-7f5c3d2b1a6e"),    // 移动速度修饰器
-            
+                UUID.fromString("7f3b3b5a-1e8f-4a1c-9e5c-3b1c9f3b5a1e"),   // 盔甲修饰器
+                UUID.fromString("8f4c4c6b-2f9f-5b2d-ad5c-4d2c8f4c6b2f"),   // 盔甲韧性修饰器
+                UUID.fromString("9d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1a"),   // 最大生命值修饰器
+                UUID.fromString("5a3b1c2d-6f8e-4d9c-b2a1-7f5c3d2b1a6e"),    // 移动速度修饰器
+
         };
-        
+
         AttributeInstance armorAttribute = player.getAttribute(Attributes.ARMOR);
         AttributeInstance armorToughnessAttribute = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
         AttributeInstance maxHealthAttribute = player.getAttribute(Attributes.MAX_HEALTH);
@@ -206,26 +208,26 @@ public class SmithingHandler {
                 armorAttribute.removeModifier(modifierId);
             }
         }
-        
+
         if (armorToughnessAttribute != null) {
             for (UUID modifierId : modifierIds) {
                 armorToughnessAttribute.removeModifier(modifierId);
             }
         }
-        
+
         if (maxHealthAttribute != null) {
             for (UUID modifierId : modifierIds) {
                 maxHealthAttribute.removeModifier(modifierId);
             }
         }
-        
+
         if (moveSpeedAttribute != null) {
             for (UUID modifierId : modifierIds) {
                 moveSpeedAttribute.removeModifier(modifierId);
             }
         }
 
-       
+
     }
 
     @SubscribeEvent
@@ -238,21 +240,21 @@ public class SmithingHandler {
                 // 检查是否有暴击率标签
                 if (heldItem.hasTag() && heldItem.getTag().contains(SmithingNBTManager.CRITICAL_STRIKE_CHANCE)) {
                     float criticalStrikeChance = heldItem.getTag().getFloat(SmithingNBTManager.CRITICAL_STRIKE_CHANCE);
-                    
+
                     // 随机判定是否暴击
                     if (player.getRandom().nextFloat() * 100 < criticalStrikeChance) {
                         // 暴击效果：伤害翻倍
                         float originalDamage = event.getAmount();
                         float criticalDamage = originalDamage * 2f;
-                        
+
                         // 设置暴击伤害
                         event.setAmount(criticalDamage);
-                        
+
                         event.getEntity().level().playSound(null, event.getEntity().blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
-                    
+
                     }
                 }
-                
+
                 // 原有的攻击伤害逻辑
                 event.setAmount(event.getAmount() + heldItem.getOrCreateTag().getInt(SmithingNBTManager.ATTACK_DAMAGE));
             }
@@ -267,24 +269,24 @@ public class SmithingHandler {
         }
 
         Player player = event.player;
-        
+
         // 遍历玩家的所有装备和物品栏
         Iterable<ItemStack> allItems = concat(
-            player.getInventory().items, 
-            player.getInventory().armor, 
-            player.getInventory().offhand
+                player.getInventory().items,
+                player.getInventory().armor,
+                player.getInventory().offhand
         );
-        
+
         // 遍历所有物品并尝试修复
         for (ItemStack inventoryItem : allItems) {
             // 检查物品是否有额外耐久
-            if (inventoryItem.hasTag() && 
-                inventoryItem.getTag().contains(SmithingNBTManager.DURABILITY)) {
+            if (inventoryItem.hasTag() &&
+                    inventoryItem.getTag().contains(SmithingNBTManager.DURABILITY)) {
                 // 尝试修复物品
                 repairItem(inventoryItem);
             }
         }
-        
+
         UUID playerId = player.getUUID();
         long currentTime = player.level().getGameTime();
 
@@ -293,7 +295,7 @@ public class SmithingHandler {
         if (lastAbsorptionTime != null && currentTime - lastAbsorptionTime >= ABSORPTION_CONVERSION_DELAY) {
             float totalAbsorption = 0f;
             boolean hasAbsorption = false;
-            
+
             // 收集并重置所有装备的吸收值
             for (ItemStack armorStack : player.getArmorSlots()) {
                 if (armorStack.hasTag() && armorStack.getTag().contains(SmithingNBTManager.ABSORPTION)) {
@@ -307,23 +309,23 @@ public class SmithingHandler {
                     }
                 }
             }
-            
+
             if (hasAbsorption) {
-                // 设置5分钟的吸收心效果
-                int absorptionDuration = 20 * 60 ; // 1分钟，以tick为单位
-                int amplifier = Math.min((int)(totalAbsorption / 2), 4); // 等级限制在0-4之间
-                
+                // 设置1分钟的吸收心效果
+                int absorptionDuration = 20 * 60; // 1分钟，以tick为单位
+                int amplifier = Math.min((int) (totalAbsorption / 2), 4); // 等级限制在0-4之间
+
                 // 如果已经有吸收效果，选择较高的等级
                 MobEffectInstance currentEffect = player.getEffect(MobEffects.ABSORPTION);
                 if (currentEffect != null) {
                     amplifier = Math.max(currentEffect.getAmplifier(), amplifier);
                 }
-                
+
                 player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, absorptionDuration, amplifier, false, false));
-                
+
                 // 显示转换提示
-                player.displayClientMessage(Component.literal("吸收值转换为吸收心效果，持续5分钟").withStyle(ChatFormatting.GOLD), true);
-                
+                player.displayClientMessage(Component.translatable("message.moreskill.absorption_conversion", 1).withStyle(ChatFormatting.GOLD), true);
+
                 // 清除记录
                 playerLastAbsorptionTime.remove(playerId);
             }
@@ -334,14 +336,14 @@ public class SmithingHandler {
     public void onLeftClickBlock(PlayerEvent.BreakSpeed event) {
         Player player = event.getEntity();
         ItemStack heldItem = player.getMainHandItem();
-        
+
         // 仅对挖掘工具生效
-        if (heldItem.getItem() instanceof DiggerItem && 
-            heldItem.hasTag() && 
-            heldItem.getTag().contains(SmithingNBTManager.BREAK_SPEED)) {
-            
+        if (heldItem.getItem() instanceof DiggerItem &&
+                heldItem.hasTag() &&
+                heldItem.getTag().contains(SmithingNBTManager.BREAK_SPEED)) {
+
             float additionalBreakSpeed = heldItem.getTag().getFloat(SmithingNBTManager.BREAK_SPEED);
-            
+
             // 根据工具类型和方块类型调整加成
             Block targetBlock = event.getState().getBlock();
             if (heldItem.getItem() instanceof PickaxeItem && targetBlock.defaultBlockState().requiresCorrectToolForDrops()) {
@@ -364,12 +366,12 @@ public class SmithingHandler {
                     // 增加吸收值，根据受到的伤害计算
                     float newAbsorption = currentAbsorption + (event.getAmount() * 0.5f); // 50%的伤害转化为吸收值
                     tag.putFloat(SmithingNBTManager.ABSORPTION, newAbsorption);
-                    
+
                     // 记录最后受到伤害的时间
                     playerLastAbsorptionTime.put(player.getUUID(), player.level().getGameTime());
-                    
+
                     // 显示吸收值获取提示
-                    player.displayClientMessage(Component.literal("装备获得吸收值：" + String.format("%.1f", newAbsorption)).withStyle(ChatFormatting.GOLD), true);
+                    player.displayClientMessage(Component.translatable("message.moreskill.absorption_gained", String.format("%.1f", newAbsorption)).withStyle(ChatFormatting.GOLD), true);
                 }
             }
 
@@ -377,7 +379,7 @@ public class SmithingHandler {
             for (ItemStack armorStack : player.getArmorSlots()) {
                 if (armorStack.hasTag() && armorStack.getTag().contains(SmithingNBTManager.THORNS)) {
                     float thornsValue = armorStack.getTag().getFloat(SmithingNBTManager.THORNS);
-                    
+
                     if (event.getSource().getEntity() instanceof LivingEntity attacker) {
                         float thornsDamage = event.getAmount() * (thornsValue / 100.0f);
                         attacker.hurt(player.damageSources().thorns(player), thornsDamage);
@@ -405,7 +407,7 @@ public class SmithingHandler {
                 // 计算击退抵抗
                 // 每50点抗击退值减少10%击退
                 float knockbackReductionFactor = 1 - (totalKnockbackResistance / 500f);
-                
+
                 // 确保不会完全免疫击退
                 knockbackReductionFactor = Math.max(0.1f, knockbackReductionFactor);
 
@@ -413,17 +415,18 @@ public class SmithingHandler {
                 if (event.getSource().getDirectEntity() != null) {
                     // 获取击退向量
                     Vec3 knockbackVector = event.getSource().getDirectEntity().getDeltaMovement();
-                    
+
                     // 缩放击退向量
                     player.setDeltaMovement(
-                        knockbackVector.x * knockbackReductionFactor,
-                        knockbackVector.y * knockbackReductionFactor,
-                        knockbackVector.z * knockbackReductionFactor
+                            knockbackVector.x * knockbackReductionFactor,
+                            knockbackVector.y * knockbackReductionFactor,
+                            knockbackVector.z * knockbackReductionFactor
                     );
                 }
             }
         }
     }
+
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
         ItemStack itemStack = event.getItemStack();
@@ -431,81 +434,52 @@ public class SmithingHandler {
         List<Component> tooltips = event.getToolTip();
 
         if (tag != null) {
-            if (tag.contains(SmithingNBTManager.ATTACK_DAMAGE)) {
-                tooltips.add(Component.literal("攻击力+" + itemStack.getOrCreateTag().getInt(SmithingNBTManager.ATTACK_DAMAGE))
-                        .withStyle(ChatFormatting.BLUE));
-            }
-            if (tag.contains(SmithingNBTManager.ATTACK_SPEED)) {
-                tooltips.add(Component.literal("攻击速度+" + itemStack.getOrCreateTag().getInt(SmithingNBTManager.ATTACK_SPEED))
-                        .withStyle(ChatFormatting.BLUE));
-            }
-            if (tag.contains(SmithingNBTManager.DURABILITY)) {
-                tooltips.add(Component.literal("额外耐久：" + itemStack.getOrCreateTag().getInt(SmithingNBTManager.DURABILITY))
-                        .withStyle(ChatFormatting.BLUE));
-            }
-            if (tag.contains(SmithingNBTManager.ARMOR)) {
-                tooltips.add(Component.literal("盔甲：" + itemStack.getOrCreateTag().getInt(SmithingNBTManager.ARMOR))
-                        .withStyle(ChatFormatting.BLUE));
-            }
-            if (tag.contains(SmithingNBTManager.ARMOR_TOUGHNESS)) {
-                tooltips.add(Component.literal("盔甲韧性：" + itemStack.getOrCreateTag().getInt(SmithingNBTManager.ARMOR_TOUGHNESS))
-                        .withStyle(ChatFormatting.BLUE));
-            }
-            if (tag.contains(SmithingNBTManager.BREAK_SPEED)) {
-                tooltips.add(Component.literal("挖掘速度：" + itemStack.getOrCreateTag().getInt(SmithingNBTManager.BREAK_SPEED))
-                        .withStyle(ChatFormatting.BLUE));
-            }
-            if (tag.contains(SmithingNBTManager.KNOCKBACK_RESISTANCE)) {
-                tooltips.add(Component.literal("抗击退：" + itemStack.getOrCreateTag().getInt(SmithingNBTManager.KNOCKBACK_RESISTANCE))
-                        .withStyle(ChatFormatting.BLUE));
-            }
-            if (tag.contains(SmithingNBTManager.CRITICAL_STRIKE_CHANCE)) {
-                tooltips.add(Component.literal("暴击率：" + itemStack.getOrCreateTag().getFloat(SmithingNBTManager.CRITICAL_STRIKE_CHANCE) + "%")
-                        .withStyle(ChatFormatting.RED));
-            }
-            if (tag.contains(SmithingNBTManager.MAX_HEALTH)) {
-                tooltips.add(Component.literal("生命值增加：+" + itemStack.getOrCreateTag().getInt(SmithingNBTManager.MAX_HEALTH))
-                        .withStyle(ChatFormatting.GREEN));
-            }
-            if (tag.contains(SmithingNBTManager.MOVE_SPEED)) {
-                tooltips.add(Component.literal("移动速度：" + itemStack.getOrCreateTag().getFloat(SmithingNBTManager.MOVE_SPEED) + "%")
-                        .withStyle(ChatFormatting.AQUA));
-            }
-            if (tag.contains(SmithingNBTManager.ABSORPTION)) {
-                tooltips.add(Component.literal("吸收值：" + itemStack.getOrCreateTag().getFloat(SmithingNBTManager.ABSORPTION))
-                        .withStyle(ChatFormatting.GOLD));
-            }
-            if (tag.contains(SmithingNBTManager.THORNS)) {
-                tooltips.add(Component.literal("荆棘：" + itemStack.getOrCreateTag().getFloat(SmithingNBTManager.THORNS) + "%伤害反弹")
-                        .withStyle(ChatFormatting.RED));
+            Map<String, Supplier<Component>> tooltipMap = new HashMap<>();
+            tooltipMap.put(SmithingNBTManager.AUTHOR, () -> Component.translatable("tooltip.smithing.author", tag.getString(SmithingNBTManager.AUTHOR)).withStyle(ChatFormatting.GOLD));
+            tooltipMap.put(SmithingNBTManager.ATTACK_DAMAGE, () -> Component.translatable("tooltip.smithing.attack_damage", tag.getInt(SmithingNBTManager.ATTACK_DAMAGE)).withStyle(ChatFormatting.BLUE));
+            tooltipMap.put(SmithingNBTManager.ATTACK_SPEED, () -> Component.translatable("tooltip.smithing.attack_speed", tag.getInt(SmithingNBTManager.ATTACK_SPEED)).withStyle(ChatFormatting.BLUE));
+            tooltipMap.put(SmithingNBTManager.DURABILITY, () -> Component.translatable("tooltip.smithing.durability", tag.getInt(SmithingNBTManager.DURABILITY)).withStyle(ChatFormatting.BLUE));
+            tooltipMap.put(SmithingNBTManager.ARMOR, () -> Component.translatable("tooltip.smithing.armor", tag.getInt(SmithingNBTManager.ARMOR)).withStyle(ChatFormatting.BLUE));
+            tooltipMap.put(SmithingNBTManager.ARMOR_TOUGHNESS, () -> Component.translatable("tooltip.smithing.armor_toughness", tag.getInt(SmithingNBTManager.ARMOR_TOUGHNESS)).withStyle(ChatFormatting.BLUE));
+            tooltipMap.put(SmithingNBTManager.BREAK_SPEED, () -> Component.translatable("tooltip.smithing.break_speed", tag.getInt(SmithingNBTManager.BREAK_SPEED)).withStyle(ChatFormatting.DARK_AQUA));
+            tooltipMap.put(SmithingNBTManager.KNOCKBACK_RESISTANCE, () -> Component.translatable("tooltip.smithing.knockback_resistance", tag.getInt(SmithingNBTManager.KNOCKBACK_RESISTANCE)).withStyle(ChatFormatting.BLUE));
+            tooltipMap.put(SmithingNBTManager.CRITICAL_STRIKE_CHANCE, () -> Component.translatable("tooltip.smithing.critical_strike_chance", tag.getFloat(SmithingNBTManager.CRITICAL_STRIKE_CHANCE)).withStyle(ChatFormatting.RED));
+            tooltipMap.put(SmithingNBTManager.MAX_HEALTH, () -> Component.translatable("tooltip.smithing.max_health", tag.getInt(SmithingNBTManager.MAX_HEALTH)).withStyle(ChatFormatting.GREEN));
+            tooltipMap.put(SmithingNBTManager.MOVE_SPEED, () -> Component.translatable("tooltip.smithing.move_speed", tag.getFloat(SmithingNBTManager.MOVE_SPEED)).withStyle(ChatFormatting.AQUA));
+            tooltipMap.put(SmithingNBTManager.ABSORPTION, () -> Component.translatable("tooltip.smithing.absorption", tag.getFloat(SmithingNBTManager.ABSORPTION)).withStyle(ChatFormatting.GOLD));
+            tooltipMap.put(SmithingNBTManager.THORNS, () -> Component.translatable("tooltip.smithing.thorns", tag.getFloat(SmithingNBTManager.THORNS)).withStyle(ChatFormatting.RED));
+
+            for (String key : tooltipMap.keySet()) {
+                if (tag.contains(key)) {
+                    tooltips.add(tooltipMap.get(key).get());
+                }
             }
         }
-       
     }
 
-    private static final Map<UUID, Float> playerAbsorptionValues = new HashMap<>();
+
     private static final Map<UUID, Long> playerLastAbsorptionTime = new HashMap<>();
     private static final long ABSORPTION_CONVERSION_DELAY = 20 * 5; // 5秒后转换
-    private static final float ABSORPTION_CONVERSION_RATIO = 0.5f; // 50%转换为吸收心
+
 
     private void repairItem(ItemStack itemStack) {
         int currentDurability = itemStack.getDamageValue(); // 当前损耗的耐久值
         // 获取额外耐久值
         int extraDurability = itemStack.getOrCreateTag().getInt(SmithingNBTManager.DURABILITY);
-        
+
         // 如果没有额外耐久，直接返回
         if (extraDurability <= 0) {
             return;
         }
         // 计算可以修复的耐久量
         int repairAmount = Math.min(extraDurability, currentDurability);
-        
+
         // 计算新的损耗值
         int newDurability = Math.max(0, currentDurability - repairAmount);
-        
+
         // 更新物品的耐久值
         itemStack.setDamageValue(newDurability);
-        
+
         // 扣除使用的额外耐久
         int remainingDurability = extraDurability - repairAmount;
         itemStack.getOrCreateTag().putInt(SmithingNBTManager.DURABILITY, Math.max(remainingDurability, 0));

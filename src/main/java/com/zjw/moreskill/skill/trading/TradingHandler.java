@@ -25,40 +25,30 @@ public class TradingHandler {
             adjustTradeCosts(offers, playerLevel);
         }
     }
+
     // 调整交易消耗
     private void adjustTradeCosts(MerchantOffers offers, int playerLevel) {
-        // 计算折扣（每升一级减少5%的消耗，最多减少100%）
-        double discount = Math.max(0.01, 1.0 - (playerLevel * 0.05));
+        // 计算折扣（每升一级减少5%的消耗，最多减少99%）
+        double discount = Math.min(0.99, playerLevel * 0.05); // 最多减少99%
         // 遍历所有交易选项
         for (int i = 0; i < offers.size(); i++) {
             MerchantOffer offer = offers.get(i);
-            // 获取交易物品
-            ItemStack buyItem1 = offer.getCostA().copy(); // 创建新的 ItemStack
-            ItemStack buyItem2 = offer.getCostB().copy(); // 创建新的 ItemStack
-            ItemStack sellItem = offer.getResult().copy(); // 创建新的 ItemStack
             // 调整第一个购买物品的数量
-            if (!buyItem1.isEmpty()) {
-                int newCount = (int) Math.round(buyItem1.getCount() * discount);
-                buyItem1.setCount(Math.max(1, newCount)); // 确保至少为1
+            if (!offer.getCostA().isEmpty()) {
+                int originalCount = offer.getCostA().getCount();
+                int newCount = (int) Math.round(originalCount * (1 - discount));
+                newCount = Math.max(1, newCount); // 确保至少为1
+                int specialPriceDiff = newCount - originalCount; // 计算价格差异
+                offer.setSpecialPriceDiff(specialPriceDiff); // 设置价格差异
             }
             // 调整第二个购买物品的数量
-            if (!buyItem2.isEmpty()) {
-                int newCount = (int) Math.round(buyItem2.getCount() * discount);
-                buyItem2.setCount(Math.max(1, newCount)); // 确保至少为1
+            if (!offer.getCostB().isEmpty()) {
+                int originalCount = offer.getCostB().getCount();
+                int newCount = (int) Math.round(originalCount * (1 - discount));
+                newCount = Math.max(1, newCount); // 确保至少为1
+                int specialPriceDiff = newCount - originalCount; // 计算价格差异
+                offer.setSpecialPriceDiff(specialPriceDiff); // 设置价格差异
             }
-            // 创建新的 MerchantOffer
-            MerchantOffer newOffer = new MerchantOffer(
-                    buyItem1, // 第一个购买物品
-                    buyItem2, // 第二个购买物品
-                    sellItem, // 出售物品
-                    offer.getUses(), // 当前使用次数
-                    offer.getMaxUses(), // 最大使用次数
-                    offer.getXp(), // 交易经验
-                    offer.getPriceMultiplier(), // 价格乘数
-                    offer.getDemand() // 需求
-            );
-            // 替换旧的交易选项
-            offers.set(i, newOffer);
         }
     }
 }

@@ -140,7 +140,7 @@ public class FarmingHandler {
         // Display a message to the player if growth occurred
         if (didGrow) {
             player.displayClientMessage(
-                    Component.literal("Grew crops in a radius of " + radius + " blocks (+" + growthBoost + " growth)")
+                    Component.translatable("message.farming.crop_growth", radius, growthBoost)
                             .withStyle(ChatFormatting.GREEN),
                     true);
         } else {
@@ -214,14 +214,14 @@ public class FarmingHandler {
 
                     // Display a message to the player
                     player.displayClientMessage(
-                            Component.literal("Harvested " + (extraDrops + 1) + " items")
+                            Component.translatable("message.farming.harvest_items", extraDrops + 1)
                                     .withStyle(ChatFormatting.GREEN),
                             true);
                 }
 
                 // Display a message to the player
                 player.displayClientMessage(
-                        Component.literal("Gained " + BASE_HARVEST_EXP + " experience (level " + level + ")")
+                        Component.translatable("message.farming.harvest_exp", BASE_HARVEST_EXP, level)
                                 .withStyle(ChatFormatting.GREEN),
                         true);
             });
@@ -245,7 +245,7 @@ public class FarmingHandler {
 
                 // Display a message to the player
                 player.displayClientMessage(
-                        Component.literal("Gained " + BASE_PLANT_EXP + " experience (level " + level + ")")
+                        Component.translatable("message.farming.plant_exp", BASE_PLANT_EXP, level)
                                 .withStyle(ChatFormatting.GREEN),
                         true);
             });
@@ -280,12 +280,12 @@ public class FarmingHandler {
                     if (!player.getInventory().add(bonemeal)) {
                         player.drop(bonemeal, false);
                     }
-                    player.displayClientMessage(Component.literal("Saved bonemeal").withStyle(ChatFormatting.GREEN), true);
+                    player.displayClientMessage(Component.translatable("message.farming.bonemeal_saved").withStyle(ChatFormatting.GREEN), true);
                 }
 
                 // Display a message to the player
                 player.displayClientMessage(
-                        Component.literal("Gained " + BASE_BONEMEAL_EXP + " experience (level " + level + ")")
+                        Component.translatable("message.farming.bonemeal_exp", BASE_BONEMEAL_EXP, level)
                                 .withStyle(ChatFormatting.GREEN),
                         true);
             });
