@@ -172,19 +172,16 @@ public class AlchemyHandler {
     public void onItemtooltip(ItemTooltipEvent event) {
         ItemStack itemStack = event.getItemStack();
         List<Component> toolTip = event.getToolTip();
-        CompoundTag itemTag = itemStack.getOrCreateTag();
+        CompoundTag itemTag = itemStack.getTag();
         
-        if (itemStack.getItem() instanceof PotionItem && 
+        if (itemTag != null && itemStack.getItem() instanceof PotionItem && 
             itemTag.contains(AlchemyNBTManager.ALCHEMY_TIME)) {
-            
             int durationLevel = itemTag.getInt(AlchemyNBTManager.ALCHEMY_TIME);
-            
             // Convert duration level to minutes
             Component durationComponent = Component.translatable(
                 "moreskill.alchemy.duration_increase", 
                 durationLevel
             );
-            
             toolTip.add(durationComponent);
         }
     }
