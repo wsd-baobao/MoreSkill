@@ -37,24 +37,29 @@ public class FishingHandler {
     public  void onPlayerFish(ItemFishedEvent event) {
         Player player = event.getEntity();
         player.getCapability(FishingSkillProvider.FISHING_SKILL).ifPresent(fishing -> {
-            List<ItemStack> drops = event.getDrops();
             Random random = new Random();
-            drops.addAll(getPlayerPool(player.getUUID()).getRandomItems(fishing.getLevel(), random, fishing.numberOfItemsToFish()));
-            // 创建并添加 ItemEntity 到世界中
-            System.out.println(drops.size());
-            for (int i = 1; i < drops.size(); i++) {
-                ItemStack extraDrop = drops.get(i);
+
+            List<ItemStack> randomItems = getPlayerPool(player.getUUID()).getRandomItems(fishing.getLevel(), random, fishing.numberOfItemsToFish());
+
+            if (randomItems.isEmpty())
+            {
+                fishing.addExp(player, 1);
+                player.displayClientMessage(Component.translatable("message.moreskill.fishing_exp_gain",1), true);
+                return;
+            }
+            for (ItemStack extraDrop : randomItems) {
                 ItemEntity itemEntity = new ItemEntity(player.level(), player.getX(), player.getY(), player.getZ(), extraDrop);
                 itemEntity.setUnlimitedLifetime();
                 player.level().addFreshEntity(itemEntity);
                 player.level().addFreshEntity(new ExperienceOrb(player.level(), player.getX(), player.getY(), player.getZ(), 1));
             }
+
             // 计算经验值（这里每个物品给1点经验）
-            int experienceGained = drops.size();
+            int experienceGained = randomItems.size()+1;
             // 增加经验
             fishing.addExp(player, experienceGained);
             player.displayClientMessage(Component.translatable("message.moreskill.fishing_exp_gain", experienceGained), true);
-            System.out.println(fishing.getExp());
+
         });
 
     }

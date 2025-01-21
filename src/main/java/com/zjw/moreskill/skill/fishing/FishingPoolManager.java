@@ -54,6 +54,8 @@ public class FishingPoolManager {
     }
     public List<ItemStack> getRandomItems(int level, Random random, int numberOfItems) {
 
+        if (!(numberOfItems > 0)) return Collections.emptyList();
+
         if (level != lastCalculatedLevel){
             cachedPoolWeights.clear();
             for (Map.Entry<Integer, ProbabilityFunction> entry : POOL_PROBABILITY_FUNCTIONS.entrySet()) {
