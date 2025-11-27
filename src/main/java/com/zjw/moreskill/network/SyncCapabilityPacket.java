@@ -29,7 +29,6 @@ public class SyncCapabilityPacket {
     public static void handle(SyncCapabilityPacket packet, Supplier<NetworkEvent.Context> context) {
         context.get().enqueueWork(() -> {
             // 在客户端更新 Capability 数据
-
         });
         context.get().setPacketHandled(true);
     }
