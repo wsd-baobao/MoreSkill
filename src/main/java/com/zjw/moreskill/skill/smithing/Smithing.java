@@ -76,7 +76,7 @@ public class Smithing implements INBTSerializable<CompoundTag> {
      * @param level 当前等级
      * @return 升级所需经验
      */
-    public int getExpForLevel() {
+    public int getExpForNextLevel() {
         return (int)(BASE_EXP * 
                     (1 + this.level * LEVEL_SCALING) * 
                     Math.pow(EXPONENTIAL_SCALING, this.level));
@@ -95,7 +95,7 @@ public class Smithing implements INBTSerializable<CompoundTag> {
         
         // 检查是否可以升级
         while (level < MAX_LEVEL) {
-            int requiredExp = getExpForLevel();
+            int requiredExp = getExpForNextLevel();
             if (exp < requiredExp) {
                 break;
             }
@@ -119,7 +119,7 @@ public class Smithing implements INBTSerializable<CompoundTag> {
         if (level >= MAX_LEVEL) {
             return 100;
         }
-        return (exp * 100.0f) / getExpForLevel();
+        return (exp * 100.0f) / getExpForNextLevel();
     }
 
     /**
@@ -130,6 +130,6 @@ public class Smithing implements INBTSerializable<CompoundTag> {
         if (level >= MAX_LEVEL) {
             return 0;
         }
-        return getExpForLevel() - exp;
+        return getExpForNextLevel() - exp;
     }
 }

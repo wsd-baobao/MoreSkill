@@ -78,11 +78,11 @@ public class Combat implements INBTSerializable<CompoundTag> {
      */
     public void addCombatExp(int exp) {
         this.exp += exp;
-        int requiredExp = getRequiredExpForNextLevel();
+        int requiredExp = getExpForNextLevel();
         while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
             this.level++;
             this.exp = 0;
-            requiredExp = getRequiredExpForNextLevel();
+            requiredExp = getExpForNextLevel();
         }
     }
 
@@ -91,7 +91,7 @@ public class Combat implements INBTSerializable<CompoundTag> {
      *
      * @return the required experience points
      */
-    public int getRequiredExpForNextLevel() {
+    public int getExpForNextLevel() {
         // Calculates the required experience points using an exponential formula 
         return (int) (BASE_EXP * Math.pow(EXPONENTIAL_SCALING, this.level));
     }

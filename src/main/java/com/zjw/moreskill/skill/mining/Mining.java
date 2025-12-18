@@ -70,13 +70,13 @@ public class Mining implements INBTSerializable<CompoundTag> {
         return exp;
     }
 
-    public int getRequiredExpForNextLevel() {
+    public int getExpForNextLevel() {
         return 100 + (this.level * 300);
     }
 
     public void addExp(Player player, int exp) {
         this.exp += exp;
-        int requiredExp = getRequiredExpForNextLevel();
+        int requiredExp = getExpForNextLevel();
         boolean leveledUp = false;
         while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
             this.level++;

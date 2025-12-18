@@ -12,9 +12,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PowerableMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
@@ -38,7 +40,6 @@ public class MoreSkillIronGolem extends IronGolem {
     protected void registerGoals() {
         super.registerGoals();
 
-       
     }
 
     @Override
@@ -55,16 +56,18 @@ public class MoreSkillIronGolem extends IronGolem {
 
             // 添加跟随主人目标
             this.goalSelector.addGoal(1, new FollowOwnerGoal(this));
+            this.goalSelector.addGoal(4, new RandomStrollGoal(this, 1.0D));
 
-            this.targetSelector.removeAllGoals(null);
+            this.targetSelector.removeAllGoals(goal -> true);
             this.targetSelector.addGoal(3,
                     new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
             // 强化攻击：主动寻找所有 Monster 敌对生物
             this.targetSelector.addGoal(1,
                     new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (mobAttack) -> {
-                        return mobAttack instanceof Monster || mobAttack instanceof Creeper;
+                        return mobAttack instanceof Monster || mobAttack instanceof Creeper
+                                || mobAttack instanceof Enemy || mobAttack instanceof PowerableMob;
                     }));
-            
+
         }
     }
 
@@ -165,7 +168,7 @@ public class MoreSkillIronGolem extends IronGolem {
         @Override
         public boolean canUse() {
             LivingEntity owner = this.golem.getOwner();
-            if (owner == null || owner.isDeadOrDying() || owner.distanceToSqr(golem) < 81.0D) {
+            if (owner == null || owner.isDeadOrDying() || owner.distanceToSqr(golem) < 225.0D) {
                 return false;
             }
             this.owner = owner;
@@ -187,13 +190,40 @@ public class MoreSkillIronGolem extends IronGolem {
         public void tick() {
             this.golem.getLookControl().setLookAt(this.owner, 10.0F, (float) this.golem.getMaxHeadXRot());
             // 实时检查：如果已经靠得太近，立即停止导航
-            if (this.golem.distanceToSqr(this.owner) <= 9.0D) {
+            if (this.golem.distanceToSqr(this.owner) <= 16.0D) {
                 this.golem.getNavigation().stop();
                 return;
             }
             if (--this.timeToRecalcPath <= 0) {
                 this.timeToRecalcPath = this.adjustedTickDelay(10);
-                this.golem.getNavigation().moveTo(this.owner, 1.0);
+                // Move to a position 4 blocks away from the owner
+                moveToPositionNearOwner();
+            }
+        }
+
+        /**
+         * Move to a position approximately 4 blocks away from the owner
+         */
+        private void moveToPositionNearOwner() {
+            if (this.owner == null)
+                return;
+
+            // Get direction vector from owner to golem
+            double dx = this.golem.getX() - this.owner.getX();
+            double dy = this.golem.getY() - this.owner.getY();
+            double dz = this.golem.getZ() - this.owner.getZ();
+
+            // Calculate distance
+            double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            if (distance > 0) {
+                // Normalize and scale to 4 blocks away
+                double scale = 4.0 / distance;
+                double targetX = this.owner.getX() + dx * scale;
+                double targetY = this.owner.getY() + dy * scale;
+                double targetZ = this.owner.getZ() + dz * scale;
+
+                this.golem.getNavigation().moveTo(targetX, targetY, targetZ, 1.0);
             }
         }
     }

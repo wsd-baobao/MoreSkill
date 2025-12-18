@@ -57,7 +57,7 @@ public class Fishing implements INBTSerializable<CompoundTag> {
     
     public void addExp(Player player, int exp) {
         this.exp += exp;
-        int requiredExp = getRequiredExpForNextLevel();
+        int requiredExp = getExpForNextLevel();
         boolean leveledUp = false;
         while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
             this.level++;
@@ -78,7 +78,7 @@ public class Fishing implements INBTSerializable<CompoundTag> {
         return new Random().nextInt(Math.min(11, (level / 10) + 2));
     }
 
-    public int getRequiredExpForNextLevel() {
+    public int getExpForNextLevel() {
         return 100 + (this.level * 50);
     }
 
@@ -93,11 +93,7 @@ public class Fishing implements INBTSerializable<CompoundTag> {
         return this.exp;
     }
 
-    //返回还差多少经验升级
   
-    public int getExpToNextLevel() {
-        return getRequiredExpForNextLevel();
-    }
 
     
     public void setLevel(int level) {

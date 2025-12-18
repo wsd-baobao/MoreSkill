@@ -68,7 +68,7 @@ public class Farming implements INBTSerializable<CompoundTag> {
     }
 
 
-    public int getExpForLevel() {
+    public int getExpForNextLevel() {
         return (int) (BASE_EXP *
                 (1 + level * LEVEL_SCALING) *
                 Math.pow(EXPONENTIAL_SCALING, level));
@@ -84,7 +84,7 @@ public class Farming implements INBTSerializable<CompoundTag> {
 
        
         while (level < MAX_LEVEL) {
-        int requiredExp = getExpForLevel();
+        int requiredExp = getExpForNextLevel();
         if (exp < requiredExp) {
             break;
         }
@@ -107,7 +107,7 @@ public class Farming implements INBTSerializable<CompoundTag> {
         if (level >= MAX_LEVEL) {
             return 100;
         }
-        return (exp * 100.0f) / getExpForLevel();
+        return (exp * 100.0f) / getExpForNextLevel();
     }
 
     
@@ -115,7 +115,7 @@ public class Farming implements INBTSerializable<CompoundTag> {
         if (level >= MAX_LEVEL) {
             return 0;
         }
-        return getExpForLevel() - exp;
+        return getExpForNextLevel() - exp;
     }
 
    
@@ -123,6 +123,6 @@ public class Farming implements INBTSerializable<CompoundTag> {
         if (level >= MAX_LEVEL) {
             return 0;
         }
-        return getExpForLevel();
+        return getExpForNextLevel();
     }
 }

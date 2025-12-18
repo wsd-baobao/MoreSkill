@@ -61,7 +61,7 @@ public class WoodCutting implements INBTSerializable<CompoundTag> {
     public void addExp(int exp) {
 
         this.exp += exp;
-        if (this.exp >= getExpForLevel()) {
+        if (this.exp >= getExpForNextLevel()) {
             this.exp = 0;
             int newLevel = this.level + 1;
             if (newLevel <= MAX_LEVEL) {
@@ -70,7 +70,7 @@ public class WoodCutting implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public int getExpForLevel() {
+    public int getExpForNextLevel() {
         return (int) (100 * Math.pow(1.1, this.level));
     }
 }

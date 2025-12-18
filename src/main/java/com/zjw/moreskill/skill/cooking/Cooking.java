@@ -120,11 +120,11 @@ public class Cooking implements INBTSerializable<CompoundTag> {
     public void addCookingExp(Player player, int exp) {
         this.exp += exp;
         
-               int requiredExp = getRequiredExpForNextLevel();
+               int requiredExp = getExpForNextLevel();
         while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
             this.level++;
             this.exp = 0;
-            requiredExp = getRequiredExpForNextLevel();
+            requiredExp = getExpForNextLevel();
            
         }
     }
@@ -132,7 +132,7 @@ public class Cooking implements INBTSerializable<CompoundTag> {
     /**
      * 璁＄畻鍗囩骇鎵€闇€缁忛獙
      * @return 鍗囩骇鎵€闇€缁忛獙鍊?     */
-    public int getRequiredExpForNextLevel() {
+    public int getExpForNextLevel() {
         // 浣跨敤鎸囨暟澧為暱鍏紡
         return (int) (BASE_EXP * Math.pow(EXPONENTIAL_SCALING, this.level));
     }

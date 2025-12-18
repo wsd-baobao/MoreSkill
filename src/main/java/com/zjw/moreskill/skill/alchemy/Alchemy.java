@@ -60,7 +60,7 @@ public class Alchemy implements INBTSerializable<CompoundTag> {
 
     public void addExp(int i) {
         this.exp += i;
-        if (this.exp >= getExpForLevel()) {
+        if (this.exp >= getExpForNextLevel()) {
             this.exp = 0;
             int newLevel = this.level + 1;
             if (newLevel <= MAX_LEVEL) {
@@ -70,7 +70,7 @@ public class Alchemy implements INBTSerializable<CompoundTag> {
 
     }
 
-    public int getExpForLevel() {
+    public int getExpForNextLevel() {
        return (int) (100 * Math.pow(1.1, this.level));
     }
 
