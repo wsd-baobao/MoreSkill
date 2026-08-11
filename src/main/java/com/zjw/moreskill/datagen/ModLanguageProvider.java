@@ -58,5 +58,35 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.farming.harvest_exp", "You gained %d harvest experience!");
         add("message.farming.harvest_items","Harvested Items: %s");
 
+        // Attribute System
+        add("key.moreskill.open_attribute_ui", "Open Attribute Panel");
+        add("screen.moreskill.attributes", "Attributes");
+        add("screen.moreskill.attributes.title", "Attribute Points");
+        add("screen.moreskill.attributes.xp_level", "Available XP Levels: %d");
+        add("screen.moreskill.attributes.level", "%d/%d");
+        add("screen.moreskill.attributes.cost", "Cost: %d");
+        add("screen.moreskill.attributes.maxed", "MAX");
+        add("screen.moreskill.attributes.error", "Failed to load attribute data");
+        add("screen.moreskill.attributes.effect.strength", "ATK %s");
+        add("screen.moreskill.attributes.effect.agility", "SPD %s");
+        add("screen.moreskill.attributes.effect.intelligence", "POT %s");
+        add("screen.moreskill.attributes.effect.vitality", "HP %s");
+        add("screen.moreskill.attributes.effect.luck", "LUK %s");
+
+        add("attribute.moreskill.strength", "Strength");
+        add("attribute.moreskill.strength.desc", "Increases attack damage");
+        add("attribute.moreskill.agility", "Agility");
+        add("attribute.moreskill.agility.desc", "Increases movement speed");
+        add("attribute.moreskill.intelligence", "Intelligence");
+        add("attribute.moreskill.intelligence.desc", "Increases potion duration");
+        add("attribute.moreskill.vitality", "Vitality");
+        add("attribute.moreskill.vitality.desc", "Increases maximum health");
+        add("attribute.moreskill.luck", "Luck");
+        add("attribute.moreskill.luck.desc", "Increases luck for better drops");
+
+        add("message.moreskill.attribute.allocated", "Allocated %s to level %d");
+        add("message.moreskill.attribute.maxed", "%s is already at max level!");
+        add("message.moreskill.attribute.not_enough_xp", "Not enough XP levels! Need %d, have %d");
+
     }
 }

@@ -1,6 +1,9 @@
 package com.zjw.moreskill.skill;
 
 import com.zjw.moreskill.MoreSkill;
+import com.zjw.moreskill.attribute.AttributeEffectHandler;
+import com.zjw.moreskill.attribute.AttributeProvider;
+import com.zjw.moreskill.network.SyncAttributePacket;
 import com.zjw.moreskill.skill.alchemy.AlchemyProvider;
 import com.zjw.moreskill.skill.combat.CombatProvider;
 import com.zjw.moreskill.skill.cooking.CookingProvider;
@@ -50,6 +53,7 @@ public class CapabilityEventHandler {
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "alchemy_skill"), new AlchemyProvider());
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "trading_skill"), new TradingProvider());
             event.addCapability(new ResourceLocation(MoreSkill.MODID, "woodcutting_skill"), new WoodCuttingProvider());
+            event.addCapability(new ResourceLocation(MoreSkill.MODID, "attributes"), new AttributeProvider());
         }
     }
 
@@ -66,6 +70,9 @@ public class CapabilityEventHandler {
         deserializeSkill(player, AlchemyProvider.ALCHEMY_CAPABILITY, "alchemy_skill");
         deserializeSkill(player, TradingProvider.TRADING_CAPABILITY, "trading_skill");
         deserializeSkill(player, WoodCuttingProvider.WOODCUTTING_CAPABILITY, "woodcutting_skill");
+        deserializeSkill(player, AttributeProvider.ATTRIBUTE_CAPABILITY, "attributes");
+        AttributeEffectHandler.applyAllModifiers(player);
+        SyncAttributePacket.syncToPlayer(player);
     }
 
     @SubscribeEvent
@@ -80,6 +87,7 @@ public class CapabilityEventHandler {
         saveSkillData(player, AlchemyProvider.ALCHEMY_CAPABILITY, "alchemy_skill");
         saveSkillData(player, TradingProvider.TRADING_CAPABILITY, "trading_skill");
         saveSkillData(player, WoodCuttingProvider.WOODCUTTING_CAPABILITY, "woodcutting_skill");
+        saveSkillData(player, AttributeProvider.ATTRIBUTE_CAPABILITY, "attributes");
     }
 
     @SubscribeEvent
@@ -95,6 +103,7 @@ public class CapabilityEventHandler {
             saveSkillData(player, AlchemyProvider.ALCHEMY_CAPABILITY, "alchemy_skill");
             saveSkillData(player, TradingProvider.TRADING_CAPABILITY, "trading_skill");
             saveSkillData(player, WoodCuttingProvider.WOODCUTTING_CAPABILITY, "woodcutting_skill");
+            saveSkillData(player, AttributeProvider.ATTRIBUTE_CAPABILITY, "attributes");
         }
     }
 

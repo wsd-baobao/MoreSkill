@@ -5,6 +5,7 @@ import com.zjw.moreskill.entity.ModEntities;
 import com.zjw.moreskill.entity.MoreSkillIronGolem;
 import com.zjw.moreskill.network.MoreSkillIronGolemPacket;
 import com.zjw.moreskill.network.NetworkHandler;
+import com.zjw.moreskill.screen.AttributePanelScreen;
 import com.zjw.moreskill.screen.SkillPanelScreen;
 import com.zjw.moreskill.utils.KeyBindings;
 import net.minecraft.client.Minecraft;
@@ -27,6 +28,13 @@ public class ClientForgeEvent {
             LocalPlayer player = Minecraft.getInstance().player;
             if (player != null) {
                 Minecraft.getInstance().setScreen(new SkillPanelScreen(player));
+            }
+        }
+
+        if (KeyBindings.ATTRIBUTE_PANEL_KEY.consumeClick()) {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (player != null) {
+                Minecraft.getInstance().setScreen(new AttributePanelScreen(player));
             }
         }
 

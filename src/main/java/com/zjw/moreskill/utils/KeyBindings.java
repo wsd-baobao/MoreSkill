@@ -16,4 +16,9 @@ public class KeyBindings {
             GLFW.GLFW_KEY_T,
             "key.categories.moreskill");// 召唤铁傀儡
 
+    public static final KeyMapping ATTRIBUTE_PANEL_KEY = new KeyMapping(
+            "key.moreskill.open_attribute_ui", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_N,
+            "key.categories.moreskill");
+
 }

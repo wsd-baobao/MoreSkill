@@ -37,5 +37,6 @@ public class ClientModEvent {
     public static void onKeyRegistry(RegisterKeyMappingsEvent event) {
         event.register(KeyBindings.SKILL_PANEL_KEY);
         event.register(KeyBindings.SUMMON_MORE_SKILL_IRON_GOLEM);
+        event.register(KeyBindings.ATTRIBUTE_PANEL_KEY);
     }
 }
