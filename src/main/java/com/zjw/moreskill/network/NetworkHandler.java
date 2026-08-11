@@ -23,5 +23,15 @@ public class NetworkHandler {
                 .decoder(MoreSkillIronGolemPacket::new)
                 .consumerMainThread(MoreSkillIronGolemPacket::handle)
                 .add();
+        INSTANCE.messageBuilder(AllocateAttributePacket.class, packetId++)
+                .encoder(AllocateAttributePacket::toBytes)
+                .decoder(AllocateAttributePacket::new)
+                .consumerMainThread(AllocateAttributePacket::handle)
+                .add();
+        INSTANCE.messageBuilder(SyncAttributePacket.class, packetId++)
+                .encoder(SyncAttributePacket::toBytes)
+                .decoder(SyncAttributePacket::new)
+                .consumerMainThread(SyncAttributePacket::handle)
+                .add();
     }
 }
