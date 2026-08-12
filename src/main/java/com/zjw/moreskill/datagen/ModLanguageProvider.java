@@ -61,32 +61,52 @@ public class ModLanguageProvider extends LanguageProvider {
         // Attribute System
         add("key.moreskill.open_attribute_ui", "Open Attribute Panel");
         add("screen.moreskill.attributes", "Attributes");
-        add("screen.moreskill.attributes.title", "Attribute Points");
-        add("screen.moreskill.attributes.xp_level", "Available XP Levels: %d");
-        add("screen.moreskill.attributes.level", "%d/%d");
-        add("screen.moreskill.attributes.cost", "Cost: %d");
+        add("screen.moreskill.attributes.tab.attributes", "Attributes");
+        add("screen.moreskill.attributes.tab.summary", "Summary");
+        add("screen.moreskill.attributes.available_points", "Available Points: %d");
+        add("screen.moreskill.attributes.xp_total", "Experience: %d");
+        add("screen.moreskill.attributes.next_cost", "Next Point: %d XP");
+        add("screen.moreskill.attributes.buy_btn", "Buy");
+        add("screen.moreskill.attributes.buy10_btn", "Buy 10");
         add("screen.moreskill.attributes.maxed", "MAX");
         add("screen.moreskill.attributes.error", "Failed to load attribute data");
-        add("screen.moreskill.attributes.effect.strength", "ATK %s");
-        add("screen.moreskill.attributes.effect.agility", "SPD %s");
-        add("screen.moreskill.attributes.effect.intelligence", "POT %s");
-        add("screen.moreskill.attributes.effect.vitality", "HP %s");
-        add("screen.moreskill.attributes.effect.luck", "LUK %s");
+        add("screen.moreskill.attributes.summary.title", "Attribute Bonus Summary");
+        add("screen.moreskill.attributes.summary.empty", "No attribute points allocated yet");
+        add("screen.moreskill.attributes.effect.atk_dmg", "Attack Damage %s");
+        add("screen.moreskill.attributes.effect.crit_dmg", "Crit Damage %s");
+        add("screen.moreskill.attributes.effect.armor", "Armor %s");
+        add("screen.moreskill.attributes.effect.speed", "Move Speed %s");
+        add("screen.moreskill.attributes.effect.crit_rate", "Crit Rate %s");
+        add("screen.moreskill.attributes.effect.atk_speed", "Attack Speed %s");
+        add("screen.moreskill.attributes.effect.dodge", "Dodge Chance %s");
+        add("screen.moreskill.attributes.effect.potion_dur", "Potion Duration %s");
+        add("screen.moreskill.attributes.effect.toughness", "Armor Toughness %s");
+        add("screen.moreskill.attributes.effect.regen", "Health Regen %s");
+        add("screen.moreskill.attributes.effect.kb_resist", "Knockback Resist %s");
+        add("screen.moreskill.attributes.effect.xp_gain", "XP Gain %s");
+        add("screen.moreskill.attributes.effect.mob_drop", "Mob Drops %s");
+        add("screen.moreskill.attributes.effect.mining_drop", "Mining Drops %s");
+        add("screen.moreskill.attributes.effect.fishing", "Fishing %s");
+        add("screen.moreskill.attributes.effect.luck_crit", "Luck Crit %s");
+        add("screen.moreskill.attributes.effect.luck_dodge", "Luck Dodge %s");
 
         add("attribute.moreskill.strength", "Strength");
-        add("attribute.moreskill.strength.desc", "Increases attack damage");
+        add("attribute.moreskill.strength.desc", "Attack damage, crit damage, armor");
         add("attribute.moreskill.agility", "Agility");
-        add("attribute.moreskill.agility.desc", "Increases movement speed");
+        add("attribute.moreskill.agility.desc", "Move speed, crit rate, attack speed, dodge");
         add("attribute.moreskill.intelligence", "Intelligence");
-        add("attribute.moreskill.intelligence.desc", "Increases potion duration");
+        add("attribute.moreskill.intelligence.desc", "Potion duration");
         add("attribute.moreskill.vitality", "Vitality");
-        add("attribute.moreskill.vitality.desc", "Increases maximum health");
+        add("attribute.moreskill.vitality.desc", "Armor toughness, health regen, knockback resist");
         add("attribute.moreskill.luck", "Luck");
-        add("attribute.moreskill.luck.desc", "Increases luck for better drops");
+        add("attribute.moreskill.luck.desc", "XP gain, drops, fishing, crit, dodge");
 
-        add("message.moreskill.attribute.allocated", "Allocated %s to level %d");
+        add("message.moreskill.attribute.allocated", "Allocated %s to %d points");
         add("message.moreskill.attribute.maxed", "%s is already at max level!");
-        add("message.moreskill.attribute.not_enough_xp", "Not enough XP levels! Need %d, have %d");
+        add("message.moreskill.attribute.no_points_available", "No attribute points available! Buy some with XP first");
+        add("message.moreskill.attribute.not_enough_xp_points", "Not enough experience!");
+        add("message.moreskill.attribute.need_more_xp", "Not enough XP! Need %d XP");
+        add("message.moreskill.attribute.points_bought", "Bought %d attribute points for %d XP");
 
     }
 }
