@@ -33,3 +33,4 @@ latest.log
 crash-reports/
 run-data/
 .cache/
+.qoder/
