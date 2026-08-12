@@ -1,6 +1,5 @@
 package com.zjw.moreskill.network;
 
-import com.zjw.moreskill.attribute.AttributeData;
 import com.zjw.moreskill.attribute.AttributeEffectHandler;
 import com.zjw.moreskill.attribute.AttributeProvider;
 import com.zjw.moreskill.attribute.ModAttribute;
@@ -35,6 +34,12 @@ public class AllocateAttributePacket {
             if (attribute == null) return;
 
             player.getCapability(AttributeProvider.ATTRIBUTE_CAPABILITY).ifPresent(data -> {
+                if (data.getAvailablePoints() <= 0) {
+                    player.sendSystemMessage(
+                            Component.translatable("message.moreskill.attribute.no_points_available"));
+                    return;
+                }
+
                 int currentPoints = data.getPoints(attribute);
                 if (currentPoints >= attribute.getMaxPoints()) {
                     player.sendSystemMessage(
@@ -42,16 +47,6 @@ public class AllocateAttributePacket {
                     return;
                 }
 
-                int cost = data.getCostForNextPoint(attribute);
-                int playerLevels = player.experienceLevel;
-
-                if (playerLevels < cost) {
-                    player.sendSystemMessage(
-                            Component.translatable("message.moreskill.attribute.not_enough_xp", cost, playerLevels));
-                    return;
-                }
-
-                player.giveExperienceLevels(-cost);
                 data.allocate(attribute);
                 AttributeEffectHandler.applyAllModifiers(player);
 
