@@ -1,7 +1,8 @@
 
 buildscript {
     repositories {
-        // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
+        // 阿里云镜像
+        maven { url = 'https://maven.aliyun.com/repository/public' }
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
         mavenCentral()
     }
@@ -85,8 +86,13 @@ mixin {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-
-
+    // 阿里云镜像
+    maven { url = 'https://maven.aliyun.com/repository/public' }
+    maven {
+        name = 'MinecraftForge'
+        url = 'https://maven.minecraftforge.net/'
+    }
+    mavenCentral()
 }
 
 dependencies {
