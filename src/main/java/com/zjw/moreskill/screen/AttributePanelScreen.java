@@ -19,12 +19,16 @@ public class AttributePanelScreen extends Screen {
     private final Player player;
     private AttributeData attributeData;
 
-    private static final int MARGIN = 40;
-    private static final int TAB_HEIGHT = 24;
-    private static final int HEADER_HEIGHT = 60;
-    private static final int ROW_HEIGHT = 50;
-    private static final int BTN_W = 60;
-    private static final int BTN_H = 18;
+    private static final int MARGIN = 60;
+    private static final int TAB_BAR_H = 22;
+    private static final int TAB_W = 56;
+    private static final int TAB_H = 18;
+    private static final int INFO_H = 28;
+    private static final int ROW_H = 24;
+    private static final int BUY_BTN_W = 46;
+    private static final int BUY_BTN_H = 16;
+    private static final int ALLOC_BTN_W = 26;
+    private static final int ALLOC_BTN_H = 16;
 
     private int currentTab = 0;
     private int hoveredAttr = -1;
@@ -68,12 +72,14 @@ public class AttributePanelScreen extends Screen {
 
         renderTabs(graphics, mouseX, mouseY);
 
-        int contentY = panelY + TAB_HEIGHT + 4;
+        int contentY = panelY + TAB_BAR_H;
 
         if (currentTab == 0) {
             renderAttributesTab(graphics, mouseX, mouseY, contentY);
         } else {
+            graphics.enableScissor(panelX, contentY, panelX + panelW, panelY + panelH);
             renderSummaryTab(graphics, contentY);
+            graphics.disableScissor();
         }
 
         if (hoveredAttr >= 0 && currentTab == 0) {
@@ -88,19 +94,25 @@ public class AttributePanelScreen extends Screen {
                 Component.translatable("screen.moreskill.attributes.tab.attributes").getString(),
                 Component.translatable("screen.moreskill.attributes.tab.summary").getString()
         };
-        int tabW = panelW / tabNames.length;
+
+        int tx = panelX + 4;
+        int ty = panelY + 2;
 
         for (int i = 0; i < tabNames.length; i++) {
-            int tx = panelX + i * tabW;
-            int ty = panelY;
+            int bx = tx + i * (TAB_W + 3);
             boolean active = i == currentTab;
-            boolean hover = mouseX >= tx && mouseX < tx + tabW && mouseY >= ty && mouseY < ty + TAB_HEIGHT;
+            boolean hover = mouseX >= bx && mouseX < bx + TAB_W && mouseY >= ty && mouseY < ty + TAB_H;
 
-            graphics.fill(tx, ty, tx + tabW, ty + TAB_HEIGHT, active ? 0xFF202040 : (hover ? 0xFF181830 : 0xFF101020));
+            graphics.fill(bx, ty, bx + TAB_W, ty + TAB_H, active ? 0xFF282850 : (hover ? 0xFF1C1C38 : 0xFF141428));
             if (active) {
-                graphics.fill(tx, ty + TAB_HEIGHT - 2, tx + tabW, ty + TAB_HEIGHT, 0xFF6688CC);
+                graphics.fill(bx, ty + TAB_H - 2, bx + TAB_W, ty + TAB_H, 0xFF6688CC);
             }
-            graphics.drawCenteredString(this.font, tabNames[i], tx + tabW / 2, ty + 7,
+            graphics.fill(bx, ty, bx + TAB_W, ty + 1, 0xFF444466);
+            graphics.fill(bx, ty, bx + 1, ty + TAB_H, 0xFF444466);
+            graphics.fill(bx + TAB_W - 1, ty, bx + TAB_W, ty + TAB_H, 0xFF444466);
+            graphics.fill(bx, ty + TAB_H - 1, bx + TAB_W, ty + TAB_H, 0xFF444466);
+
+            graphics.drawCenteredString(this.font, tabNames[i], bx + TAB_W / 2, ty + 5,
                     active ? 0xFFFFFF : 0x888899);
         }
     }
@@ -110,112 +122,105 @@ public class AttributePanelScreen extends Screen {
         int available = attributeData.getAvailablePoints();
         int nextCost = attributeData.getCostForNextPoint();
 
+        int infoY = contentY + 2;
         graphics.drawString(this.font,
                 Component.translatable("screen.moreskill.attributes.available_points", available),
-                panelX + 12, contentY + 4, 0xFFCC44);
+                panelX + 10, infoY + 2, 0xFFCC44);
+
+        int xpX = panelX + 10 + this.font.width(
+                Component.translatable("screen.moreskill.attributes.available_points", available).getString()) + 10;
         graphics.drawString(this.font,
                 Component.translatable("screen.moreskill.attributes.xp_total", totalXp),
-                panelX + 12, contentY + 16, 0x55FF55);
-        graphics.drawString(this.font,
-                Component.translatable("screen.moreskill.attributes.next_cost", nextCost),
-                panelX + 12, contentY + 28, 0xAAAAAA);
+                xpX, infoY + 2, 0x55FF55);
 
-        int buyBtnX = panelX + panelW - BTN_W - 80;
-        int buyBtnY = contentY + 8;
+        int buyBtnX = panelX + panelW - BUY_BTN_W * 2 - 14;
+        int buyBtnY = infoY;
         boolean canBuy = totalXp >= nextCost;
-        graphics.fill(buyBtnX, buyBtnY, buyBtnX + BTN_W, buyBtnY + BTN_H,
+        graphics.fill(buyBtnX, buyBtnY, buyBtnX + BUY_BTN_W, buyBtnY + BUY_BTN_H,
                 canBuy ? 0xFF336633 : 0xFF333333);
         graphics.drawCenteredString(this.font,
                 Component.translatable("screen.moreskill.attributes.buy_btn"),
-                buyBtnX + BTN_W / 2, buyBtnY + 5, canBuy ? 0xFFFFFF : 0x666666);
+                buyBtnX + BUY_BTN_W / 2, buyBtnY + 4, canBuy ? 0xFFFFFF : 0x666666);
 
-        int buy10BtnX = buyBtnX + BTN_W + 6;
+        int buy10BtnX = buyBtnX + BUY_BTN_W + 4;
         int cost10 = attributeData.getXpForBuyAmount(10);
         boolean canBuy10 = totalXp >= cost10;
-        graphics.fill(buy10BtnX, buyBtnY, buy10BtnX + BTN_W, buyBtnY + BTN_H,
+        graphics.fill(buy10BtnX, buyBtnY, buy10BtnX + BUY_BTN_W, buyBtnY + BUY_BTN_H,
                 canBuy10 ? 0xFF336633 : 0xFF333333);
         graphics.drawCenteredString(this.font,
                 Component.translatable("screen.moreskill.attributes.buy10_btn"),
-                buy10BtnX + BTN_W / 2, buyBtnY + 5, canBuy10 ? 0xFFFFFF : 0x666666);
+                buy10BtnX + BUY_BTN_W / 2, buyBtnY + 4, canBuy10 ? 0xFFFFFF : 0x666666);
 
-        int listY = contentY + HEADER_HEIGHT - 10;
-        graphics.fill(panelX + 8, listY - 2, panelX + panelW - 8, listY - 1, 0xFF333355);
+        int costX = buyBtnX - 8;
+        String costStr = Component.translatable("screen.moreskill.attributes.next_cost", nextCost).getString();
+        int costW = this.font.width(costStr);
+        graphics.drawString(this.font, costStr,
+                costX - costW, infoY + 2, 0xAAAAAA);
+
+        int sepY = contentY + INFO_H;
+        graphics.fill(panelX + 4, sepY, panelX + panelW - 4, sepY + 1, 0xFF333355);
+
+        int listY = sepY + 3;
 
         ModAttribute[] attrs = ModAttribute.values();
         hoveredAttr = -1;
 
+        graphics.enableScissor(panelX, listY, panelX + panelW, panelY + panelH - 2);
         for (int i = 0; i < attrs.length; i++) {
             ModAttribute attr = attrs[i];
-            int rowY = listY + 6 + i * ROW_HEIGHT;
+            int rowY = listY + i * ROW_H;
+
+            if (rowY + ROW_H - 2 > panelY + panelH - 2) break;
+
             int points = attributeData.getPoints(attr);
-            boolean isMaxed = points >= attr.getMaxPoints();
-            boolean hasPoints = available > 0 && !isMaxed;
+            boolean hasPoints = available > 0;
 
-            if (mouseX >= panelX + 10 && mouseX <= panelX + panelW - 10
-                    && mouseY >= rowY && mouseY <= rowY + ROW_HEIGHT - 4) {
+            if (mouseX >= panelX + 6 && mouseX <= panelX + panelW - 6
+                    && mouseY >= rowY && mouseY <= rowY + ROW_H - 2) {
                 hoveredAttr = i;
-                graphics.fill(panelX + 10, rowY, panelX + panelW - 10, rowY + ROW_HEIGHT - 4, 0x30FFFFFF);
+                graphics.fill(panelX + 6, rowY, panelX + panelW - 6, rowY + ROW_H - 2, 0x30FFFFFF);
             }
 
-            graphics.drawString(this.font, attr.getDisplayName(), panelX + 16, rowY + 4, 0xFFFFFF);
+            graphics.drawString(this.font, attr.getDisplayName(), panelX + 12, rowY + 4, 0xFFFFFF);
 
-            String levelStr = points + " / " + attr.getMaxPoints();
-            graphics.drawString(this.font, levelStr, panelX + 16, rowY + 18, 0xAAAAAA);
+            String levelStr = "[" + points + "]";
+            int nameW = this.font.width(attr.getDisplayName().getString());
+            graphics.drawString(this.font, levelStr, panelX + 12 + nameW + 6, rowY + 4, 0xAAAAAA);
 
-            int barX = panelX + 100;
-            int barY = rowY + 20;
-            int barW = panelW - 260;
-            int barH = 6;
-            graphics.fill(barX, barY, barX + barW, barY + barH, 0xFF222233);
-            int filledW = (int) ((float) points / attr.getMaxPoints() * barW);
-            int barColor = switch (attr) {
-                case STRENGTH -> 0xFFCC4444;
-                case AGILITY -> 0xFF44CC44;
-                case INTELLIGENCE -> 0xFF4488FF;
-                case VITALITY -> 0xFFCCAA44;
-                case LUCK -> 0xFFCC44CC;
-            };
-            graphics.fill(barX, barY, barX + filledW, barY + barH, barColor);
-
-            int allocBtnX = panelX + panelW - 50;
-            int allocBtnY = rowY + 12;
+            int allocBtnX = panelX + panelW - ALLOC_BTN_W - 8;
+            int allocBtnY = rowY + (ROW_H - ALLOC_BTN_H) / 2 - 1;
             if (hasPoints) {
-                graphics.fill(allocBtnX, allocBtnY, allocBtnX + 30, allocBtnY + 20, 0xFF336633);
-                graphics.drawCenteredString(this.font, "+1", allocBtnX + 15, allocBtnY + 6, 0xFFFFFF);
+                graphics.fill(allocBtnX, allocBtnY, allocBtnX + ALLOC_BTN_W, allocBtnY + ALLOC_BTN_H, 0xFF336633);
+                graphics.drawCenteredString(this.font, "+1", allocBtnX + ALLOC_BTN_W / 2, allocBtnY + 4, 0xFFFFFF);
             } else {
-                graphics.fill(allocBtnX, allocBtnY, allocBtnX + 30, allocBtnY + 20, 0xFF333333);
-                graphics.drawCenteredString(this.font, "+1", allocBtnX + 15, allocBtnY + 6, 0x555555);
-            }
-
-            if (isMaxed) {
-                graphics.drawString(this.font,
-                        Component.translatable("screen.moreskill.attributes.maxed").getString(),
-                        allocBtnX - 36, rowY + 16, 0xFFAA00);
+                graphics.fill(allocBtnX, allocBtnY, allocBtnX + ALLOC_BTN_W, allocBtnY + ALLOC_BTN_H, 0xFF333333);
+                graphics.drawCenteredString(this.font, "+1", allocBtnX + ALLOC_BTN_W / 2, allocBtnY + 4, 0x555555);
             }
         }
+        graphics.disableScissor();
     }
 
     private void renderSummaryTab(GuiGraphics graphics, int contentY) {
-        int y = contentY + 8;
+        int y = contentY + 6;
         graphics.drawString(this.font,
                 Component.translatable("screen.moreskill.attributes.summary.title"),
-                panelX + 16, y, 0xFFCC44);
-        y += 16;
+                panelX + 12, y, 0xFFCC44);
+        y += 14;
 
         ModAttribute[] attrs = ModAttribute.values();
         for (ModAttribute attr : attrs) {
             int pts = attributeData.getPoints(attr);
             if (pts == 0) continue;
 
-            graphics.drawString(this.font, attr.getDisplayName(), panelX + 16, y, 0xFFFFFF);
-            y += 12;
+            graphics.drawString(this.font, attr.getDisplayName(), panelX + 12, y, 0xFFFFFF);
+            y += 11;
 
             List<String> effects = getEffectDetails(attr, pts);
             for (String effect : effects) {
-                graphics.drawString(this.font, "  " + effect, panelX + 24, y, 0x88CCFF);
+                graphics.drawString(this.font, "  " + effect, panelX + 20, y, 0x88CCFF);
                 y += 10;
             }
-            y += 6;
+            y += 4;
         }
 
         if (attributeData.getTotalAllocated() == 0) {
@@ -231,12 +236,8 @@ public class AttributePanelScreen extends Screen {
         int pts = attributeData.getPoints(attr);
 
         List<String> lines = new ArrayList<>();
-        lines.add(attr.getDisplayName().getString() + " [" + pts + "/" + attr.getMaxPoints() + "]");
+        lines.add(attr.getDisplayName().getString() + " [" + pts + "]");
         lines.addAll(getEffectDetails(attr, pts));
-        if (pts < attr.getMaxPoints()) {
-            lines.add("");
-            lines.addAll(getEffectDetails(attr, pts + 1));
-        }
 
         int tooltipW = 0;
         for (String line : lines) {
@@ -318,35 +319,34 @@ public class AttributePanelScreen extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (attributeData == null) return super.mouseClicked(mouseX, mouseY, button);
 
-        int tabW = panelW / 2;
-        if (mouseY >= panelY && mouseY < panelY + TAB_HEIGHT) {
-            if (mouseX >= panelX && mouseX < panelX + tabW) {
-                currentTab = 0;
-                return true;
-            } else if (mouseX >= panelX + tabW && mouseX < panelX + panelW) {
-                currentTab = 1;
+        int tx = panelX + 4;
+        int ty = panelY + 2;
+        for (int i = 0; i < 2; i++) {
+            int bx = tx + i * (TAB_W + 3);
+            if (mouseX >= bx && mouseX < bx + TAB_W && mouseY >= ty && mouseY < ty + TAB_H) {
+                currentTab = i;
                 return true;
             }
         }
 
         if (currentTab == 0) {
-            int contentY = panelY + TAB_HEIGHT + 4;
-            int buyBtnX = panelX + panelW - BTN_W - 80;
-            int buyBtnY = contentY + 8;
+            int contentY = panelY + TAB_BAR_H;
+            int buyBtnX = panelX + panelW - BUY_BTN_W * 2 - 14;
+            int buyBtnY = contentY + 2;
 
-            if (mouseX >= buyBtnX && mouseX <= buyBtnX + BTN_W
-                    && mouseY >= buyBtnY && mouseY <= buyBtnY + BTN_H) {
+            if (mouseX >= buyBtnX && mouseX <= buyBtnX + BUY_BTN_W
+                    && mouseY >= buyBtnY && mouseY <= buyBtnY + BUY_BTN_H) {
                 int totalXp = BuyAttributePointsPacket.getTotalExperience(player);
                 int cost = attributeData.getCostForNextPoint();
                 if (totalXp >= cost) {
-                    NetworkHandler.INSTANCE.sendToServer(new BuyAttributePointsPacket(totalXp));
+                    NetworkHandler.INSTANCE.sendToServer(new BuyAttributePointsPacket(cost));
                 }
                 return true;
             }
 
-            int buy10BtnX = buyBtnX + BTN_W + 6;
-            if (mouseX >= buy10BtnX && mouseX <= buy10BtnX + BTN_W
-                    && mouseY >= buyBtnY && mouseY <= buyBtnY + BTN_H) {
+            int buy10BtnX = buyBtnX + BUY_BTN_W + 4;
+            if (mouseX >= buy10BtnX && mouseX <= buy10BtnX + BUY_BTN_W
+                    && mouseY >= buyBtnY && mouseY <= buyBtnY + BUY_BTN_H) {
                 int totalXp = BuyAttributePointsPacket.getTotalExperience(player);
                 int cost10 = attributeData.getXpForBuyAmount(10);
                 if (totalXp >= cost10) {
@@ -355,17 +355,17 @@ public class AttributePanelScreen extends Screen {
                 return true;
             }
 
-            int listY = contentY + HEADER_HEIGHT - 10;
+            int sepY = contentY + INFO_H;
+            int listY = sepY + 3;
             ModAttribute[] attrs = ModAttribute.values();
             for (int i = 0; i < attrs.length; i++) {
-                int rowY = listY + 6 + i * ROW_HEIGHT;
-                int allocBtnX = panelX + panelW - 50;
-                int allocBtnY = rowY + 12;
+                int rowY = listY + i * ROW_H;
+                int allocBtnX = panelX + panelW - ALLOC_BTN_W - 8;
+                int allocBtnY = rowY + (ROW_H - ALLOC_BTN_H) / 2 - 1;
 
-                if (mouseX >= allocBtnX && mouseX <= allocBtnX + 30
-                        && mouseY >= allocBtnY && mouseY <= allocBtnY + 20) {
-                    if (attributeData.getAvailablePoints() > 0
-                            && attributeData.getPoints(attrs[i]) < attrs[i].getMaxPoints()) {
+                if (mouseX >= allocBtnX && mouseX <= allocBtnX + ALLOC_BTN_W
+                        && mouseY >= allocBtnY && mouseY <= allocBtnY + ALLOC_BTN_H) {
+                    if (attributeData.getAvailablePoints() > 0) {
                         NetworkHandler.INSTANCE.sendToServer(new AllocateAttributePacket(attrs[i].getId()));
                     }
                     return true;
