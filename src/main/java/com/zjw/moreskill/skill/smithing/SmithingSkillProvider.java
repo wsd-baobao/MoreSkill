@@ -13,7 +13,7 @@ public class SmithingSkillProvider implements ICapabilityProvider {
 
     public static final Capability <Smithing> SMITHING_SKILL = CapabilityManager.get(new CapabilityToken<>() {});
 
-    private static Smithing smithing = new Smithing();
+    private final Smithing smithing = new Smithing();
     private final LazyOptional<Smithing> SmithingCapability =  LazyOptional.of(()-> smithing);
 
     @Override

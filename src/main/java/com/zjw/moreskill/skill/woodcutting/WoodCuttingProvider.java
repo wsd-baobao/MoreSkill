@@ -3,8 +3,6 @@ package com.zjw.moreskill.skill.woodcutting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.zjw.moreskill.skill.smithing.Smithing;
-
 import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -17,7 +15,7 @@ public class WoodCuttingProvider implements ICapabilityProvider {
     public static final Capability<WoodCutting> WOODCUTTING_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
     });
 
-    private static WoodCutting woodCutting = new WoodCutting();
+    private final WoodCutting woodCutting = new WoodCutting();
     private final LazyOptional<WoodCutting> instance = LazyOptional.of(() -> woodCutting);
 
     @Override

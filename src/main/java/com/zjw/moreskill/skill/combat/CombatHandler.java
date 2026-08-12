@@ -7,16 +7,13 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Mod.EventBusSubscriber(modid = MoreSkill.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CombatHandler {
     // Totem of Undying cooldown tracking
     private static final Map<UUID, Long> totemCooldownMap = new ConcurrentHashMap<>();
@@ -39,126 +36,87 @@ public class CombatHandler {
     private static final double MAX_PARRY_CHANCE = 0.6; // Maximum parry chance
     private static final long PARRY_COOLDOWN = 1500; // Parry cooldown time (milliseconds)
 
+    @SubscribeEvent
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        UUID playerId = event.getEntity().getUUID();
+        totemCooldownMap.remove(playerId);
+        dodgeCooldownMap.remove(playerId);
+        parryCooldownMap.remove(playerId);
+    }
 
     @SubscribeEvent
     public void onEntityHurt(LivingHurtEvent event) {
-        // Check if the entity being hurt is a player
+        // 处理玩家被伤害的情况（防御机制）
         if (event.getEntity() instanceof Player player) {
             player.getCapability(CombatProvider.COMBAT_CAPABILITY).ifPresent(combat -> {
                 long currentTime = System.currentTimeMillis();
-                long cooldown = calculateTotemCooldown(combat.getLevel());
-                Long lastTotemUseTime = totemCooldownMap.get(player.getUUID());
                 combat.addCombatExp(1);
-                // Check if the player can use the Totem of Undying skill
-                if (combat.getLevel() > 50 && (lastTotemUseTime == null || currentTime - lastTotemUseTime >= cooldown)) {
-                    // Check if the player's health is low enough to trigger the skill
-                    if (player.getHealth() <= event.getAmount()) {
-                        // Activate the Totem of Undying skill
+
+                // 1. 优先检查不死图腾（濒死触发）
+                if (combat.getLevel() > 50 && player.getHealth() <= event.getAmount()) {
+                    long cooldown = calculateTotemCooldown(combat.getLevel());
+                    Long lastTotemUseTime = totemCooldownMap.get(player.getUUID());
+                    if (lastTotemUseTime == null || currentTime - lastTotemUseTime >= cooldown) {
                         player.setHealth(player.getMaxHealth() * (0.4f + 0.01f * combat.getLevel()));
-                        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION,
-                                900 + (combat.getLevel() * 100),
-                                1));
-                        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION,
-                                100 + (combat.getLevel() * 20),
-                                1));
-                        player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE,
-                                800 + (combat.getLevel() * 100),
-                                0));
-
-                        // Update the cooldown for the Totem of Undying skill
+                        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 900 + (combat.getLevel() * 100), 1));
+                        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100 + (combat.getLevel() * 20), 1));
+                        player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 800 + (combat.getLevel() * 100), 0));
                         totemCooldownMap.put(player.getUUID(), currentTime);
-
-                        // Add combat experience to the player
-                        combat.addCombatExp( 10);
-
-                        // Cancel the hurt event
+                        combat.addCombatExp(10);
                         event.setCanceled(true);
-
-                        // Log the activation of the Totem of Undying skill
                         MoreSkill.LOGGER.info("Player {} activated Totem of Undying skill at level {}",
                                 player.getName().getString(), combat.getLevel());
+                        return;
                     }
                 }
-                // Check if the player can parry the attack
-                Long lastParryTime = parryCooldownMap.get(player.getUUID());
 
-                // Check if the player is holding a sword
+                // 2. 检查格挡（需要持剑）
                 boolean holdingSword = player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem;
-
-                // Check if the player can parry the attack
-                if (holdingSword && (lastParryTime == null || currentTime - lastParryTime >= PARRY_COOLDOWN)) {
-                    double parryChance = calculateParryChance(combat.getLevel());
-
-                    // Check if the player successfully parries the attack
-                    if (Math.random() < parryChance) {
-                        // Cancel the hurt event
-                        event.setCanceled(true);
-
-                        // Update the cooldown for the parry
-                        parryCooldownMap.put(player.getUUID(), currentTime);
-
-                        // Add combat experience to the player
-                        combat.addCombatExp( 7);
-
-                        // Check if the attacker is a living entity
-                        if (event.getSource().getEntity() instanceof LivingEntity attacker) {
-                            // Calculate the counter damage
-                            float counterDamage = calculateCounterDamage(combat.getLevel());
-
-                            // Deal the counter damage to the attacker
-                            DamageSource counterAttackSource = player.level().damageSources().playerAttack(player);
-                            attacker.hurt(counterAttackSource, counterDamage);
-
-                            // Log the successful parry and counter-attack
-                            MoreSkill.LOGGER.info(
-                                    "Player {} successfully parried and counter-attacked at combat level {}",
+                if (holdingSword) {
+                    Long lastParryTime = parryCooldownMap.get(player.getUUID());
+                    if (lastParryTime == null || currentTime - lastParryTime >= PARRY_COOLDOWN) {
+                        double parryChance = calculateParryChance(combat.getLevel());
+                        if (Math.random() < parryChance) {
+                            event.setCanceled(true);
+                            parryCooldownMap.put(player.getUUID(), currentTime);
+                            combat.addCombatExp(7);
+                            if (event.getSource().getEntity() instanceof LivingEntity attacker) {
+                                float counterDamage = calculateCounterDamage(combat.getLevel());
+                                attacker.hurt(player.level().damageSources().playerAttack(player), counterDamage);
+                            }
+                            MoreSkill.LOGGER.info("Player {} successfully parried and counter-attacked at combat level {}",
                                     player.getName().getString(), combat.getLevel());
+                            return;
                         }
-
-                        // TODO: Implement additional effects for a successful parry
                     }
                 }
 
-                // Check if the player can dodge the attack
+                // 3. 检查闪避
                 Long lastDodgeTime = dodgeCooldownMap.get(player.getUUID());
-
-                // Check if the player can dodge the attack
                 if (lastDodgeTime == null || currentTime - lastDodgeTime >= DODGE_COOLDOWN) {
                     double dodgeChance = calculateDodgeChance(combat.getLevel());
-
-                    // Check if the player successfully dodges the attack
                     if (Math.random() < dodgeChance) {
-                        // Cancel the hurt event
                         event.setCanceled(true);
-
-                        // Update the cooldown for the dodge
                         dodgeCooldownMap.put(player.getUUID(), currentTime);
-
-                        // Add combat experience to the player
-                        combat.addCombatExp( 5);
-
-                        // Log the successful dodge
+                        combat.addCombatExp(5);
                         MoreSkill.LOGGER.info("Player {} successfully dodged an attack at combat level {}",
                                 player.getName().getString(), combat.getLevel());
-
-                        // TODO: Implement additional effects for a successful dodge
+                        return;
                     }
                 }
             });
         }
 
-        // Check if the attacker is a player
+        // 事件已被取消则不再处理后续逻辑
+        if (event.isCanceled()) return;
+
+        // 处理玩家攻击其他实体的情况（吸血 + 攻击经验）
         if (event.getSource().getEntity() instanceof Player player) {
-            // Get the combat capability of the player
-            Combat combat = player.getCapability(CombatProvider.COMBAT_CAPABILITY).orElse(null);
-            int combatLevel = combat.getLevel();
-            combat.addCombatExp(1);
-            // Apply life steal
-            applyLifeSteal(player, combatLevel, event.getAmount());
-            // Update the damage amount
-            event.setAmount(event.getAmount());
+            player.getCapability(CombatProvider.COMBAT_CAPABILITY).ifPresent(combat -> {
+                combat.addCombatExp(1);
+                applyLifeSteal(player, combat.getLevel(), event.getAmount());
+            });
         }
-    
     }
 
     /**

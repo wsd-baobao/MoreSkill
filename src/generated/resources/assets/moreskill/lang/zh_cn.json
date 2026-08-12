@@ -59,7 +59,7 @@
     "screen.moreskill.attributes.effect.dodge": "闪避几率 %s",
     "screen.moreskill.attributes.effect.potion_dur": "药水持续 %s",
     "screen.moreskill.attributes.effect.toughness": "盔甲韧性 %s",
-    "screen.moreskill.attributes.effect.regen": "生命恢复 %s",
+    "screen.moreskill.attributes.effect.regen": "生命恢复 +%s/秒",
     "screen.moreskill.attributes.effect.kb_resist": "击退抗性 %s",
     "screen.moreskill.attributes.effect.xp_gain": "经验获取 %s",
     "screen.moreskill.attributes.effect.mob_drop": "怪物掉落 %s",

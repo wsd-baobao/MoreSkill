@@ -44,8 +44,11 @@ public final class AttributeEffects {
         return points * 0.3;
     }
 
+    /**
+     * 每秒直接恢复的生命值（固定值，不依赖最大生命值）
+     */
     public static double getHealthRegenBonus(int points) {
-        return points * 0.005;
+        return points * 0.1;
     }
 
     public static double getKnockbackResistanceBonus(int points) {

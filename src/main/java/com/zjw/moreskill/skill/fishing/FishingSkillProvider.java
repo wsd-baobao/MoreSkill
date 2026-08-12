@@ -13,7 +13,7 @@ public class FishingSkillProvider implements ICapabilityProvider {
 
     public static final Capability<Fishing> FISHING_SKILL = CapabilityManager.get(new CapabilityToken<>() {
     });
-    private static Fishing fishing = new Fishing();
+    private final Fishing fishing = new Fishing();
     private final LazyOptional<Fishing> fishingCapability = LazyOptional.of(() -> fishing);
 
     public FishingSkillProvider() {

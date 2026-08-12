@@ -22,17 +22,15 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.brewing.PlayerBrewedPotionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 /**
  * @author zjw
  * @createTime 2021/12/16 15:41
  */
-@Mod.EventBusSubscriber(modid = MoreSkill.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class AlchemyHandler {
 
     @SubscribeEvent
-    public static void onPotionEvent(LivingEntityUseItemEvent.Finish event) {
+    public void onPotionEvent(LivingEntityUseItemEvent.Finish event) {
         if (event.getEntity() instanceof Player player) {
             ItemStack itemStack = event.getItem();
 
@@ -73,7 +71,7 @@ public class AlchemyHandler {
         }
     }
     @SubscribeEvent
-    public static void onPotionBrew(PlayerBrewedPotionEvent event) {
+    public void onPotionBrew(PlayerBrewedPotionEvent event) {
         ItemStack brewedStack = event.getStack();
 
         if (!brewedStack.getOrCreateTag().contains(AlchemyNBTManager.AUTHOR)) {
@@ -86,7 +84,7 @@ public class AlchemyHandler {
         }
     }
     @SubscribeEvent
-    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+    public void onEntityJoinLevel(EntityJoinLevelEvent event) {
         if (event.getEntity() instanceof AreaEffectCloud cloud) {
             // 检查区域效果云是否由玩家创建
             if (cloud.getOwner() instanceof Player player) {
@@ -128,7 +126,7 @@ public class AlchemyHandler {
         }
     }
     @SubscribeEvent
-    public static void onProjectileImpact(ProjectileImpactEvent event) {
+    public void onProjectileImpact(ProjectileImpactEvent event) {
         // 检查是否是喷溅药水
         if (event.getProjectile() instanceof ThrownPotion potion) {
             // 获取药水的效果

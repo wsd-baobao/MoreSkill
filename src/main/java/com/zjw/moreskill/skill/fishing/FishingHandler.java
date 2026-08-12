@@ -9,7 +9,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.player.ItemFishedEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.List;
 import java.util.Random;
@@ -18,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 // 监听玩家钓鱼事件(处理玩家的钓鱼相关行为)
-@Mod.EventBusSubscriber(modid = MoreSkill.MODID,bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class FishingHandler {
 
     // 缓存玩家的FishingPoolManager实例
@@ -30,6 +28,12 @@ public class FishingHandler {
         UUID playerId = player.getUUID();
         playerPools.putIfAbsent(playerId, new FishingPoolManager());
     }
+
+    @SubscribeEvent
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        playerPools.remove(event.getEntity().getUUID());
+    }
+
     public static FishingPoolManager getPlayerPool(UUID playerId) {
         return playerPools.getOrDefault(playerId, null);
     }

@@ -13,7 +13,7 @@ public class MiningSkillProvider implements ICapabilityProvider {
 
     public static final Capability<Mining> MINING_SKILL = CapabilityManager.get(new CapabilityToken<>() {});
 
-    private static Mining mining = new Mining();
+    private final Mining mining = new Mining();
     private final LazyOptional<Mining> miningCapability =  LazyOptional.of(() -> mining);
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {

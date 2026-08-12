@@ -13,7 +13,7 @@ import net.minecraftforge.common.util.LazyOptional;
 public class AlchemyProvider implements ICapabilityProvider {
     public static final Capability<Alchemy> ALCHEMY_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    private static Alchemy alchemy = new Alchemy();
+    private final Alchemy alchemy = new Alchemy();
     private final LazyOptional<Alchemy> optional = LazyOptional.of(() -> alchemy);
 
     @Override

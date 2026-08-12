@@ -19,16 +19,16 @@ public class AttributePanelScreen extends Screen {
     private final Player player;
     private AttributeData attributeData;
 
-    private static final int MARGIN = 60;
-    private static final int TAB_BAR_H = 22;
-    private static final int TAB_W = 56;
-    private static final int TAB_H = 18;
-    private static final int INFO_H = 28;
-    private static final int ROW_H = 24;
-    private static final int BUY_BTN_W = 46;
-    private static final int BUY_BTN_H = 16;
-    private static final int ALLOC_BTN_W = 26;
-    private static final int ALLOC_BTN_H = 16;
+    private static final int MARGIN = 40;
+    private static final int TAB_BAR_H = 20;
+    private static final int TAB_W = 50;
+    private static final int TAB_H = 16;
+    private static final int INFO_H = 22;
+    private static final int ROW_H = 20;
+    private static final int BUY_BTN_W = 42;
+    private static final int BUY_BTN_H = 14;
+    private static final int ALLOC_BTN_W = 24;
+    private static final int ALLOC_BTN_H = 14;
 
     private int currentTab = 0;
     private int hoveredAttr = -1;
@@ -82,11 +82,12 @@ public class AttributePanelScreen extends Screen {
             graphics.disableScissor();
         }
 
+        super.render(graphics, mouseX, mouseY, partialTick);
+
+        // 最后绘制浮动提示，确保在所有内容之上
         if (hoveredAttr >= 0 && currentTab == 0) {
             renderTooltip(graphics, mouseX, mouseY);
         }
-
-        super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     private void renderTabs(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -140,7 +141,7 @@ public class AttributePanelScreen extends Screen {
                 canBuy ? 0xFF336633 : 0xFF333333);
         graphics.drawCenteredString(this.font,
                 Component.translatable("screen.moreskill.attributes.buy_btn"),
-                buyBtnX + BUY_BTN_W / 2, buyBtnY + 4, canBuy ? 0xFFFFFF : 0x666666);
+                buyBtnX + BUY_BTN_W / 2, buyBtnY + 3, canBuy ? 0xFFFFFF : 0x666666);
 
         int buy10BtnX = buyBtnX + BUY_BTN_W + 4;
         int cost10 = attributeData.getXpForBuyAmount(10);
@@ -149,7 +150,7 @@ public class AttributePanelScreen extends Screen {
                 canBuy10 ? 0xFF336633 : 0xFF333333);
         graphics.drawCenteredString(this.font,
                 Component.translatable("screen.moreskill.attributes.buy10_btn"),
-                buy10BtnX + BUY_BTN_W / 2, buyBtnY + 4, canBuy10 ? 0xFFFFFF : 0x666666);
+                buy10BtnX + BUY_BTN_W / 2, buyBtnY + 3, canBuy10 ? 0xFFFFFF : 0x666666);
 
         int costX = buyBtnX - 8;
         String costStr = Component.translatable("screen.moreskill.attributes.next_cost", nextCost).getString();
@@ -181,20 +182,20 @@ public class AttributePanelScreen extends Screen {
                 graphics.fill(panelX + 6, rowY, panelX + panelW - 6, rowY + ROW_H - 2, 0x30FFFFFF);
             }
 
-            graphics.drawString(this.font, attr.getDisplayName(), panelX + 12, rowY + 4, 0xFFFFFF);
+            graphics.drawString(this.font, attr.getDisplayName(), panelX + 10, rowY + 3, 0xFFFFFF);
 
             String levelStr = "[" + points + "]";
             int nameW = this.font.width(attr.getDisplayName().getString());
-            graphics.drawString(this.font, levelStr, panelX + 12 + nameW + 6, rowY + 4, 0xAAAAAA);
+            graphics.drawString(this.font, levelStr, panelX + 10 + nameW + 4, rowY + 3, 0xAAAAAA);
 
             int allocBtnX = panelX + panelW - ALLOC_BTN_W - 8;
             int allocBtnY = rowY + (ROW_H - ALLOC_BTN_H) / 2 - 1;
             if (hasPoints) {
                 graphics.fill(allocBtnX, allocBtnY, allocBtnX + ALLOC_BTN_W, allocBtnY + ALLOC_BTN_H, 0xFF336633);
-                graphics.drawCenteredString(this.font, "+1", allocBtnX + ALLOC_BTN_W / 2, allocBtnY + 4, 0xFFFFFF);
+                graphics.drawCenteredString(this.font, "+1", allocBtnX + ALLOC_BTN_W / 2, allocBtnY + 3, 0xFFFFFF);
             } else {
                 graphics.fill(allocBtnX, allocBtnY, allocBtnX + ALLOC_BTN_W, allocBtnY + ALLOC_BTN_H, 0xFF333333);
-                graphics.drawCenteredString(this.font, "+1", allocBtnX + ALLOC_BTN_W / 2, allocBtnY + 4, 0x555555);
+                graphics.drawCenteredString(this.font, "+1", allocBtnX + ALLOC_BTN_W / 2, allocBtnY + 3, 0x555555);
             }
         }
         graphics.disableScissor();
@@ -243,25 +244,42 @@ public class AttributePanelScreen extends Screen {
         for (String line : lines) {
             tooltipW = Math.max(tooltipW, this.font.width(line));
         }
-        tooltipW += 8;
+        tooltipW += 10;
 
+        int th = lines.size() * 10 + 8;
+
+        // 默认显示在鼠标上方，避免遮挡属性行
         int tx = mouseX + 12;
-        int ty = mouseY - 4;
-        int th = lines.size() * 10 + 6;
+        int ty = mouseY - th - 4;
 
+        // 边界修正：左右
         if (tx + tooltipW > this.width - 4) tx = mouseX - tooltipW - 4;
+        if (tx < 4) tx = 4;
+        // 边界修正：上方空间不够则放到鼠标下方
+        if (ty < 4) ty = mouseY + 16;
         if (ty + th > this.height - 4) ty = this.height - th - 4;
 
+        // 先提交所有已绘制内容，确保 tooltip 不会被遮挡
+        graphics.flush();
+        graphics.pose().pushPose();
+        // 与原版 tooltip 一致：在 z=400 层绘制，保证处于最上层
+        graphics.pose().translate(0.0F, 0.0F, 400.0F);
+
+        // 绘制背景与边框
         graphics.fill(tx, ty, tx + tooltipW, ty + th, 0xF0101030);
         graphics.fill(tx, ty, tx + tooltipW, ty + 1, 0xFF6666AA);
         graphics.fill(tx, ty + th - 1, tx + tooltipW, ty + th, 0xFF6666AA);
         graphics.fill(tx, ty, tx + 1, ty + th, 0xFF6666AA);
         graphics.fill(tx + tooltipW - 1, ty, tx + tooltipW, ty + th, 0xFF6666AA);
 
+        // 立即提交背景，避免被其他文字的渲染层级盖住
+        graphics.flush();
+
         for (int i = 0; i < lines.size(); i++) {
             int color = i == 0 ? 0xFFFFFF : (lines.get(i).isEmpty() ? 0 : 0x88CCFF);
-            graphics.drawString(this.font, lines.get(i), tx + 4, ty + 3 + i * 10, color);
+            graphics.drawString(this.font, lines.get(i), tx + 5, ty + 4 + i * 10, color);
         }
+        graphics.pose().popPose();
     }
 
     private List<String> getEffectDetails(ModAttribute attr, int pts) {
@@ -293,7 +311,7 @@ public class AttributePanelScreen extends Screen {
                 lines.add(Component.translatable("screen.moreskill.attributes.effect.toughness",
                         String.format("+%.1f", AttributeEffects.getArmorToughnessBonus(pts))).getString());
                 lines.add(Component.translatable("screen.moreskill.attributes.effect.regen",
-                        String.format("+%.1f%%", AttributeEffects.getHealthRegenBonus(pts) * 100)).getString());
+                        String.format("%.1f", AttributeEffects.getHealthRegenBonus(pts))).getString());
                 lines.add(Component.translatable("screen.moreskill.attributes.effect.kb_resist",
                         String.format("+%.1f%%", AttributeEffects.getKnockbackResistanceBonus(pts) * 100)).getString());
             }

@@ -1,21 +1,16 @@
 package com.zjw.moreskill.event;
 
 import com.zjw.moreskill.MoreSkill;
-import com.zjw.moreskill.entity.ModEntities;
-import com.zjw.moreskill.entity.MoreSkillIronGolem;
 import com.zjw.moreskill.network.MoreSkillIronGolemPacket;
 import com.zjw.moreskill.network.NetworkHandler;
+import com.zjw.moreskill.network.SyncSkillRequestPacket;
 import com.zjw.moreskill.screen.AttributePanelScreen;
 import com.zjw.moreskill.screen.SkillPanelScreen;
 import com.zjw.moreskill.utils.KeyBindings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.entity.IronGolemRenderer;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -27,6 +22,8 @@ public class ClientForgeEvent {
         if (KeyBindings.SKILL_PANEL_KEY.consumeClick()) {
             LocalPlayer player = Minecraft.getInstance().player;
             if (player != null) {
+                // 向服务端请求最新的技能数据，避免面板显示过期数据
+                NetworkHandler.INSTANCE.sendToServer(new SyncSkillRequestPacket());
                 Minecraft.getInstance().setScreen(new SkillPanelScreen(player));
             }
         }

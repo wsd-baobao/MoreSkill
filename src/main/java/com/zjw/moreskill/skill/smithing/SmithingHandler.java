@@ -30,7 +30,6 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +40,6 @@ import java.util.function.Supplier;
 
 import static com.google.common.collect.Iterables.concat;
 
-@Mod.EventBusSubscriber(modid = MoreSkill.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class SmithingHandler {
 
     private static final UUID ATTACK_SPEED_MODIFIER_ID = UUID.fromString("36e6640b-3968-43b2-9406-b5886092f17a");
@@ -82,7 +80,7 @@ public class SmithingHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingEquipmentChange(LivingEquipmentChangeEvent event) {
+    public void onLivingEquipmentChange(LivingEquipmentChangeEvent event) {
         LivingEntity entity = event.getEntity();
         // 检查实体是否为玩家
         if (entity instanceof Player player) {

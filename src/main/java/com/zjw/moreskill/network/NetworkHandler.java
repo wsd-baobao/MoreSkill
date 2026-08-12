@@ -38,5 +38,15 @@ public class NetworkHandler {
                 .decoder(BuyAttributePointsPacket::new)
                 .consumerMainThread(BuyAttributePointsPacket::handle)
                 .add();
+        INSTANCE.messageBuilder(SyncSkillRequestPacket.class, packetId++)
+                .encoder(SyncSkillRequestPacket::toBytes)
+                .decoder(SyncSkillRequestPacket::new)
+                .consumerMainThread(SyncSkillRequestPacket::handle)
+                .add();
+        INSTANCE.messageBuilder(SyncSkillPacket.class, packetId++)
+                .encoder(SyncSkillPacket::toBytes)
+                .decoder(SyncSkillPacket::new)
+                .consumerMainThread(SyncSkillPacket::handle)
+                .add();
     }
 }

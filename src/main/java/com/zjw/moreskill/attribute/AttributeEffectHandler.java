@@ -20,11 +20,9 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = MoreSkill.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class AttributeEffectHandler {
 
     private static final UUID STR_ATK_UUID = UUID.fromString("a1b2c3d4-0001-4000-8000-000000000001");
@@ -208,9 +206,9 @@ public class AttributeEffectHandler {
 
         player.getCapability(AttributeProvider.ATTRIBUTE_CAPABILITY).ifPresent(data -> {
             int vit = data.getPoints(ModAttribute.VITALITY);
-            double regenBonus = AttributeEffects.getHealthRegenBonus(vit);
-            if (regenBonus > 0 && player.tickCount % 20 == 0) {
-                float heal = (float) (regenBonus * player.getMaxHealth() * 0.05);
+            double regenPerSecond = AttributeEffects.getHealthRegenBonus(vit);
+            if (regenPerSecond > 0 && player.tickCount % 20 == 0) {
+                float heal = (float) regenPerSecond;
                 if (heal > 0 && player.getHealth() < player.getMaxHealth()) {
                     player.heal(heal);
                 }

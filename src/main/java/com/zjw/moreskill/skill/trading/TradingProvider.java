@@ -14,7 +14,7 @@ public class TradingProvider implements ICapabilityProvider {
 public static final Capability<Trading> TRADING_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
     });
 
-    private static Trading trading = new Trading();
+    private final Trading trading = new Trading();
     private final LazyOptional<Trading> instance = LazyOptional.of(() -> trading);
 
     @Override

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 public class FarmingProvider implements ICapabilityProvider {
     public static final Capability<Farming> FARMING_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    private static Farming farming = new Farming();
+    private final Farming farming = new Farming();
     private final LazyOptional<Farming> optional = LazyOptional.of(() -> farming);
 
     @Override

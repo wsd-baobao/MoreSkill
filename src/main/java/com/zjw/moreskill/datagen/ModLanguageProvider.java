@@ -81,7 +81,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("screen.moreskill.attributes.effect.dodge", "Dodge Chance %s");
         add("screen.moreskill.attributes.effect.potion_dur", "Potion Duration %s");
         add("screen.moreskill.attributes.effect.toughness", "Armor Toughness %s");
-        add("screen.moreskill.attributes.effect.regen", "Health Regen %s");
+        add("screen.moreskill.attributes.effect.regen", "Health Regen +%s/s");
         add("screen.moreskill.attributes.effect.kb_resist", "Knockback Resist %s");
         add("screen.moreskill.attributes.effect.xp_gain", "XP Gain %s");
         add("screen.moreskill.attributes.effect.mob_drop", "Mob Drops %s");

@@ -59,7 +59,7 @@
   "screen.moreskill.attributes.effect.dodge": "Dodge Chance %s",
   "screen.moreskill.attributes.effect.potion_dur": "Potion Duration %s",
   "screen.moreskill.attributes.effect.toughness": "Armor Toughness %s",
-  "screen.moreskill.attributes.effect.regen": "Health Regen %s",
+  "screen.moreskill.attributes.effect.regen": "Health Regen +%s/s",
   "screen.moreskill.attributes.effect.kb_resist": "Knockback Resist %s",
   "screen.moreskill.attributes.effect.xp_gain": "XP Gain %s",
   "screen.moreskill.attributes.effect.mob_drop": "Mob Drops %s",
