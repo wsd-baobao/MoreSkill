@@ -6,6 +6,11 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
@@ -122,7 +127,15 @@ public class AttributeEffectHandler {
             double dropBonus = AttributeEffects.getMobDropBonus(luck);
             if (dropBonus > 0 && Math.random() < dropBonus) {
                 LivingEntity entity = event.getEntity();
-                entity.spawnAtLocation(entity.getLootTable());
+                LootTable lootTable = entity.level().getServer().getLootData()
+                        .getElement(net.minecraft.world.level.storage.loot.LootDataType.TABLE, entity.getLootTable());
+                if (lootTable != null) {
+                    LootParams lootParams = new LootParams.Builder((net.minecraft.server.level.ServerLevel) entity.level())
+                            .withParameter(LootContextParams.ORIGIN, entity.position())
+                            .withParameter(LootContextParams.THIS_ENTITY, entity)
+                            .create(LootContextParamSets.ENTITY);
+                    lootTable.getRandomItemsRaw(lootParams, itemStack -> entity.spawnAtLocation(itemStack));
+                }
             }
         });
     }
