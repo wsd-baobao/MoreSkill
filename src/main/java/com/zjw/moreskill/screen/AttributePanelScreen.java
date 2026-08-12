@@ -19,10 +19,10 @@ public class AttributePanelScreen extends Screen {
     private final Player player;
     private AttributeData attributeData;
 
-    private static final int MARGIN = 40;
+    private static final int MARGIN = 60;
     private static final int TAB_HEIGHT = 24;
     private static final int HEADER_HEIGHT = 60;
-    private static final int ROW_HEIGHT = 50;
+    private static final int ROW_HEIGHT = 36;
     private static final int BTN_W = 60;
     private static final int BTN_H = 18;
 
@@ -70,11 +70,13 @@ public class AttributePanelScreen extends Screen {
 
         int contentY = panelY + TAB_HEIGHT + 4;
 
+        graphics.enableScissor(panelX, contentY, panelX + panelW, panelY + panelH);
         if (currentTab == 0) {
             renderAttributesTab(graphics, mouseX, mouseY, contentY);
         } else {
             renderSummaryTab(graphics, contentY);
         }
+        graphics.disableScissor();
 
         if (hoveredAttr >= 0 && currentTab == 0) {
             renderTooltip(graphics, mouseX, mouseY);
@@ -147,9 +149,11 @@ public class AttributePanelScreen extends Screen {
         for (int i = 0; i < attrs.length; i++) {
             ModAttribute attr = attrs[i];
             int rowY = listY + 6 + i * ROW_HEIGHT;
+
+            if (rowY + ROW_HEIGHT - 4 > panelY + panelH - 4) break;
+
             int points = attributeData.getPoints(attr);
-            boolean isMaxed = points >= attr.getMaxPoints();
-            boolean hasPoints = available > 0 && !isMaxed;
+            boolean hasPoints = available > 0;
 
             if (mouseX >= panelX + 10 && mouseX <= panelX + panelW - 10
                     && mouseY >= rowY && mouseY <= rowY + ROW_HEIGHT - 4) {
@@ -159,38 +163,17 @@ public class AttributePanelScreen extends Screen {
 
             graphics.drawString(this.font, attr.getDisplayName(), panelX + 16, rowY + 4, 0xFFFFFF);
 
-            String levelStr = points + " / " + attr.getMaxPoints();
-            graphics.drawString(this.font, levelStr, panelX + 16, rowY + 18, 0xAAAAAA);
-
-            int barX = panelX + 100;
-            int barY = rowY + 20;
-            int barW = panelW - 260;
-            int barH = 6;
-            graphics.fill(barX, barY, barX + barW, barY + barH, 0xFF222233);
-            int filledW = (int) ((float) points / attr.getMaxPoints() * barW);
-            int barColor = switch (attr) {
-                case STRENGTH -> 0xFFCC4444;
-                case AGILITY -> 0xFF44CC44;
-                case INTELLIGENCE -> 0xFF4488FF;
-                case VITALITY -> 0xFFCCAA44;
-                case LUCK -> 0xFFCC44CC;
-            };
-            graphics.fill(barX, barY, barX + filledW, barY + barH, barColor);
+            String levelStr = String.valueOf(points);
+            graphics.drawString(this.font, levelStr, panelX + 16, rowY + 16, 0xAAAAAA);
 
             int allocBtnX = panelX + panelW - 50;
-            int allocBtnY = rowY + 12;
+            int allocBtnY = rowY + 6;
             if (hasPoints) {
                 graphics.fill(allocBtnX, allocBtnY, allocBtnX + 30, allocBtnY + 20, 0xFF336633);
                 graphics.drawCenteredString(this.font, "+1", allocBtnX + 15, allocBtnY + 6, 0xFFFFFF);
             } else {
                 graphics.fill(allocBtnX, allocBtnY, allocBtnX + 30, allocBtnY + 20, 0xFF333333);
                 graphics.drawCenteredString(this.font, "+1", allocBtnX + 15, allocBtnY + 6, 0x555555);
-            }
-
-            if (isMaxed) {
-                graphics.drawString(this.font,
-                        Component.translatable("screen.moreskill.attributes.maxed").getString(),
-                        allocBtnX - 36, rowY + 16, 0xFFAA00);
             }
         }
     }
@@ -231,12 +214,8 @@ public class AttributePanelScreen extends Screen {
         int pts = attributeData.getPoints(attr);
 
         List<String> lines = new ArrayList<>();
-        lines.add(attr.getDisplayName().getString() + " [" + pts + "/" + attr.getMaxPoints() + "]");
+        lines.add(attr.getDisplayName().getString() + " [" + pts + "]");
         lines.addAll(getEffectDetails(attr, pts));
-        if (pts < attr.getMaxPoints()) {
-            lines.add("");
-            lines.addAll(getEffectDetails(attr, pts + 1));
-        }
 
         int tooltipW = 0;
         for (String line : lines) {
@@ -339,7 +318,7 @@ public class AttributePanelScreen extends Screen {
                 int totalXp = BuyAttributePointsPacket.getTotalExperience(player);
                 int cost = attributeData.getCostForNextPoint();
                 if (totalXp >= cost) {
-                    NetworkHandler.INSTANCE.sendToServer(new BuyAttributePointsPacket(totalXp));
+                    NetworkHandler.INSTANCE.sendToServer(new BuyAttributePointsPacket(cost));
                 }
                 return true;
             }
@@ -360,12 +339,11 @@ public class AttributePanelScreen extends Screen {
             for (int i = 0; i < attrs.length; i++) {
                 int rowY = listY + 6 + i * ROW_HEIGHT;
                 int allocBtnX = panelX + panelW - 50;
-                int allocBtnY = rowY + 12;
+                int allocBtnY = rowY + 6;
 
                 if (mouseX >= allocBtnX && mouseX <= allocBtnX + 30
                         && mouseY >= allocBtnY && mouseY <= allocBtnY + 20) {
-                    if (attributeData.getAvailablePoints() > 0
-                            && attributeData.getPoints(attrs[i]) < attrs[i].getMaxPoints()) {
+                    if (attributeData.getAvailablePoints() > 0) {
                         NetworkHandler.INSTANCE.sendToServer(new AllocateAttributePacket(attrs[i].getId()));
                     }
                     return true;
