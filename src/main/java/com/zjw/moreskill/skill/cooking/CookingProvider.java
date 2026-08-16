@@ -1,23 +1,20 @@
 package com.zjw.moreskill.skill.cooking;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.core.Direction;
+import com.zjw.moreskill.skill.SkillCapabilityProvider;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
 
-public class CookingProvider implements ICapabilityProvider {
-     public static final Capability<Cooking> COOKING_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+public class CookingProvider extends SkillCapabilityProvider<Cooking> {
 
-    private final Cooking cooking = new Cooking();
-    private final LazyOptional<Cooking> optional = LazyOptional.of(() -> cooking);
+    public static final Capability<Cooking> COOKING_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
+
+    public CookingProvider() {
+        super(new Cooking());
+    }
 
     @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        return cap == COOKING_CAPABILITY ? optional.cast() : LazyOptional.empty();
+    protected Capability<Cooking> getCapabilityType() {
+        return COOKING_CAPABILITY;
     }
 }
