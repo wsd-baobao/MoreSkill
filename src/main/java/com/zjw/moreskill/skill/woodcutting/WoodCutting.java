@@ -27,13 +27,11 @@ public class WoodCutting implements INBTSerializable<CompoundTag> {
         if (nbt.contains("Level")) {
             setLevel(nbt.getInt("Level"));
         } else {
-            System.out.println("没有等级数据");
             setLevel(0); // 默认值
         }
         if (nbt.contains("Experience")) {
             setExp(nbt.getInt("Experience"));
         } else {
-            System.out.println("没有经验数据");
             setExp(0); // 默认值
         }
     }
@@ -58,14 +56,21 @@ public class WoodCutting implements INBTSerializable<CompoundTag> {
     }
 
 
-    public void addExp(int exp) {
-
-        this.exp += exp;
-        if (this.exp >= getExpForNextLevel()) {
-            this.exp = 0;
-            int newLevel = this.level + 1;
-            if (newLevel <= MAX_LEVEL) {
-                this.level = newLevel;
+    public void addExp(int expGain) {
+        if (level >= MAX_LEVEL) {
+            return;
+        }
+        this.exp += expGain;
+        while (level < MAX_LEVEL) {
+            int requiredExp = getExpForNextLevel();
+            if (this.exp < requiredExp) {
+                break;
+            }
+            this.exp -= requiredExp;
+            level++;
+            if (level >= MAX_LEVEL) {
+                this.exp = 0;
+                break;
             }
         }
     }

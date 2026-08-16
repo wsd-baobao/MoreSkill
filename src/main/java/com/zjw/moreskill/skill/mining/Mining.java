@@ -40,13 +40,11 @@ public class Mining implements INBTSerializable<CompoundTag> {
         if (nbt.contains("Level")) {
             setLevel(nbt.getInt("Level"));
         } else {
-            System.out.println("没有等级数据");
             setLevel(0); // 默认值
         }
         if (nbt.contains("Experience")) {
             setExp(nbt.getInt("Experience"));
         } else {
-            System.out.println("没有经验数据");
             setExp(0); // 默认值
         }
     }
@@ -74,17 +72,22 @@ public class Mining implements INBTSerializable<CompoundTag> {
         return 100 + (this.level * 300);
     }
 
-    public void addExp(Player player, int exp) {
-        this.exp += exp;
-        int requiredExp = getExpForNextLevel();
-        boolean leveledUp = false;
-        while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
-            this.level++;
-            this.exp = 0;
-            leveledUp = true;
+    public void addExp(Player player, int expGain) {
+        if (level >= MAX_LEVEL) {
+            return;
         }
-        if (this.level >= MAX_LEVEL) {
-            this.exp = 0;
+        this.exp += expGain;
+        while (level < MAX_LEVEL) {
+            int requiredExp = getExpForNextLevel();
+            if (this.exp < requiredExp) {
+                break;
+            }
+            this.exp -= requiredExp;
+            level++;
+            if (level >= MAX_LEVEL) {
+                this.exp = 0;
+                break;
+            }
         }
     }
 

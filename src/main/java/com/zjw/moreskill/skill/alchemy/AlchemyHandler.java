@@ -105,7 +105,6 @@ public class AlchemyHandler {
                     // 延长药水时间
                     List<MobEffectInstance> modifiedEffects = new ArrayList<>();
                     for (MobEffectInstance effect : effects) {
-                        System.out.println("存在标签"+ duration);
                         int newDuration = effect.getDuration() + (duration * 20 * 60); // 每级增加 1 分钟
                         MobEffectInstance newEffect = new MobEffectInstance(
                                 effect.getEffect(),

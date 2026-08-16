@@ -30,24 +30,25 @@ public class MiningHandler {
             BlockPos pos = event.getPos();
             Level world = player.level();
             if (MiningManager.isOre(state)) {
+                if (!(world instanceof ServerLevel serverLevel)) {
+                    return;
+                }
                 List<ItemStack> drops = state.getDrops(
-                        new LootParams.Builder((ServerLevel) player.level())
+                        new LootParams.Builder(serverLevel)
                                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
                                 .withParameter(LootContextParams.TOOL, player.getMainHandItem()));
-                //根据挖掘等级随机向drops中添加N个掉落物
-                for (int i = 0; i < mining.getItemsCountByLevel(); i++) {
-                    drops.add(drops.get(0));
-                }
-                for (int i = 1; i < drops.size(); i++) {
-                    ItemStack drop = drops.get(i);
-                    if (!drop.isEmpty()) {
-                        ItemEntity itemEntity = new ItemEntity(player.level(), pos.getX(), pos.getY() + 1, pos.getZ(), drop);
-                        itemEntity.setDefaultPickUpDelay();
-                        // itemEntity.setUnlimitedLifetime();
-                        world.addFreshEntity(itemEntity);
+                // 原版会正常生成完整战利品表，这里仅根据挖掘等级生成额外掉落副本
+                if (!drops.isEmpty()) {
+                    ItemStack baseDrop = drops.get(0);
+                    for (int i = 0; i < mining.getItemsCountByLevel(); i++) {
+                        if (!baseDrop.isEmpty()) {
+                            ItemEntity itemEntity = new ItemEntity(world,
+                                    pos.getX(), pos.getY() + 1, pos.getZ(), baseDrop.copy());
+                            itemEntity.setDefaultPickUpDelay();
+                            world.addFreshEntity(itemEntity);
+                        }
                     }
                 }
-                System.out.println("获取mining经验");
                 mining.addExp(player, drops.size());
                 player.giveExperiencePoints(drops.size());
             } else if (MiningManager.isStone(state)) {
@@ -58,6 +59,9 @@ public class MiningHandler {
 
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) {
+            return;
+        }
         Player player = event.player;
         if (player.level().getGameTime() % 200 == 0) {//10秒
             player.getCapability(MiningSkillProvider.MINING_SKILL).ifPresent(mining -> {
@@ -66,7 +70,6 @@ public class MiningHandler {
                 }
             });
         }
-
     }
 
     @SubscribeEvent

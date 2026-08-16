@@ -1,7 +1,7 @@
 package com.zjw.moreskill.skill.fishing;
 
-import com.zjw.moreskill.MoreSkill;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -11,7 +11,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,13 +34,13 @@ public class FishingHandler {
     }
 
     public static FishingPoolManager getPlayerPool(UUID playerId) {
-        return playerPools.getOrDefault(playerId, null);
+        return playerPools.computeIfAbsent(playerId, k -> new FishingPoolManager());
     }
     @SubscribeEvent
     public  void onPlayerFish(ItemFishedEvent event) {
         Player player = event.getEntity();
         player.getCapability(FishingSkillProvider.FISHING_SKILL).ifPresent(fishing -> {
-            Random random = new Random();
+            RandomSource random = player.getRandom();
 
             List<ItemStack> randomItems = getPlayerPool(player.getUUID()).getRandomItems(fishing.getLevel(), random, fishing.numberOfItemsToFish());
 

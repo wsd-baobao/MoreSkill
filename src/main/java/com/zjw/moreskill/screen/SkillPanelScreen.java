@@ -29,6 +29,10 @@ import net.minecraft.world.entity.player.Player;
 public class SkillPanelScreen extends Screen {
     private final Player player;
 
+    // 技能面板中每个技能格子的尺寸
+    private static final int CELL_W = 100;
+    private static final int CELL_H = 30;
+
     // Skills
     private Fishing fishingSkill;
     private Mining miningSkill;
@@ -156,43 +160,42 @@ public class SkillPanelScreen extends Screen {
             int row = i / columns;
             int col = i % columns;
 
-            int x = centerX - panelWidth / 2 + cellWidth * (col + 1) - 22;
-            int y = centerY - panelHeight / 2 + cellHeight * (row + 1);
-            
-            
-            //TODO: 通过经验来提升技能等级，如果拥有的经验足够升级，就显示为一个其他的颜色
-            //TODO: 点击对应技能范围，消耗经验，提升技能等级。
+            // 以格子中心定位，保证高亮框与文字居中对齐
+            int cellCenterX = centerX - panelWidth / 2 + cellWidth * (col + 1);
+            int cellCenterY = centerY - panelHeight / 2 + cellHeight * (row + 1);
+            int x = cellCenterX - CELL_W / 2;
+            int y = cellCenterY - CELL_H / 2;
 
-
-            //TODO: 高亮范围不正确，没有居中。
             // 鼠标移动到技能位置添加高亮
-            if (mouseX >= x && mouseX <= x + 100 && mouseY >= y && mouseY <= y + 30) {
+            if (mouseX >= x && mouseX <= x + CELL_W && mouseY >= y && mouseY <= y + CELL_H) {
                 // Mouse is hovering over this skill
                 hoveredSkillIndex = i;
 
                 // Draw highlight background
-                graphics.fill(x - 2, y - 2, x + 102, y + 32, 0x80FFFFFF);
+                graphics.fill(x, y, x + CELL_W, y + CELL_H, 0x40FFFFFF);
 
                 // Draw border
-                graphics.fill(x - 2, y - 2, x + 102, y, 0xFFFFFFFF); // Top
-                graphics.fill(x - 2, y + 30, x + 102, y + 32, 0xFFFFFFFF); // Bottom
-                graphics.fill(x - 2, y - 2, x, y + 32, 0xFFFFFFFF); // Left
-                graphics.fill(x + 100, y - 2, x + 102, y + 32, 0xFFFFFFFF); // Right
+                graphics.fill(x, y, x + CELL_W, y + 2, 0xFFFFFFFF); // Top
+                graphics.fill(x, y + CELL_H - 2, x + CELL_W, y + CELL_H, 0xFFFFFFFF); // Bottom
+                graphics.fill(x, y, x + 2, y + CELL_H, 0xFFFFFFFF); // Left
+                graphics.fill(x + CELL_W - 2, y, x + CELL_W, y + CELL_H, 0xFFFFFFFF); // Right
             }
 
-            // Skill name and level 技能和经验的字体颜色
+            // Skill name and level 技能和经验的字体颜色（文字在格子内居中）
+            String nameText = skillNames[i] + " Lv: " + skillLevels[i];
+            String expText = "Exp: " + skillExps[i] + "/" + skilllevelupexp[i];
             graphics.drawString(
                     this.font,
-                    skillNames[i] + " Lv: " + skillLevels[i],
-                    x,
-                    y,
+                    nameText,
+                    x + (CELL_W - this.font.width(nameText)) / 2,
+                    y + 6,
                     hoveredSkillIndex == i ? 0xFFFF00 : 0xFFFFFF);
 
             graphics.drawString(
                     this.font,
-                    "Exp: " + skillExps[i] + "/" + skilllevelupexp[i],
-                    x,
-                    y + 10,
+                    expText,
+                    x + (CELL_W - this.font.width(expText)) / 2,
+                    y + 17,
                     hoveredSkillIndex == i ? 0xFFFFAA : 0xAAAAAA);
         }
 

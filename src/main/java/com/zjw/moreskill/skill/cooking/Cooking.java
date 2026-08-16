@@ -1,7 +1,6 @@
 package com.zjw.moreskill.skill.cooking;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -44,13 +43,11 @@ public class Cooking implements INBTSerializable<CompoundTag> {
         if (nbt.contains("Level")) {
             setLevel(nbt.getInt("Level"));
         } else {
-            System.out.println("娌℃湁绛夌骇鏁版嵁");
             setLevel(0);
         }
         if (nbt.contains("Experience")) {
             setExp(nbt.getInt("Experience"));
         } else {
-            System.out.println("娌℃湁缁忛獙鏁版嵁");
             setExp(0);
         }
     }
@@ -118,14 +115,21 @@ public class Cooking implements INBTSerializable<CompoundTag> {
      * @param player 鐜╁
      * @param exp 瑕佹坊鍔犵殑缁忛獙鍊?     */
     public void addCookingExp(Player player, int exp) {
+        if (level >= MAX_LEVEL) {
+            return;
+        }
         this.exp += exp;
-        
-               int requiredExp = getExpForNextLevel();
-        while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
-            this.level++;
-            this.exp = 0;
-            requiredExp = getExpForNextLevel();
-           
+        while (level < MAX_LEVEL) {
+            int requiredExp = getExpForNextLevel();
+            if (this.exp < requiredExp) {
+                break;
+            }
+            this.exp -= requiredExp;
+            level++;
+            if (level >= MAX_LEVEL) {
+                this.exp = 0;
+                break;
+            }
         }
     }
 

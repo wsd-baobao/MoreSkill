@@ -2,13 +2,6 @@ package com.zjw.moreskill.skill.combat;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-
-/**
- * Represents a player's combat skills and experience.
- * Handles leveling up and experience points.
- */
-
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class Combat implements INBTSerializable<CompoundTag> {
@@ -76,13 +69,22 @@ public class Combat implements INBTSerializable<CompoundTag> {
      *
      * @param exp the amount of experience to add
      */
-    public void addCombatExp(int exp) {
-        this.exp += exp;
-        int requiredExp = getExpForNextLevel();
-        while (this.exp >= requiredExp && this.level < MAX_LEVEL) {
-            this.level++;
-            this.exp = 0;
-            requiredExp = getExpForNextLevel();
+    public void addCombatExp(int expGain) {
+        if (level >= MAX_LEVEL) {
+            return;
+        }
+        exp += expGain;
+        while (level < MAX_LEVEL) {
+            int requiredExp = getExpForNextLevel();
+            if (exp < requiredExp) {
+                break;
+            }
+            exp -= requiredExp;
+            level++;
+            if (level >= MAX_LEVEL) {
+                exp = 0;
+                break;
+            }
         }
     }
 

@@ -2,19 +2,9 @@ package com.zjw.moreskill.skill;
 
 import com.zjw.moreskill.MoreSkill;
 import com.zjw.moreskill.attribute.AttributeEffectHandler;
-import com.zjw.moreskill.attribute.AttributeProvider;
 import com.zjw.moreskill.network.NetworkHandler;
 import com.zjw.moreskill.network.SyncAttributePacket;
 import com.zjw.moreskill.network.SyncSkillPacket;
-import com.zjw.moreskill.skill.alchemy.AlchemyProvider;
-import com.zjw.moreskill.skill.combat.CombatProvider;
-import com.zjw.moreskill.skill.cooking.CookingProvider;
-import com.zjw.moreskill.skill.farming.FarmingProvider;
-import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
-import com.zjw.moreskill.skill.mining.MiningSkillProvider;
-import com.zjw.moreskill.skill.smithing.SmithingSkillProvider;
-import com.zjw.moreskill.skill.trading.TradingProvider;
-import com.zjw.moreskill.skill.woodcutting.WoodCuttingProvider;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
@@ -34,7 +24,6 @@ import net.minecraftforge.network.NetworkDirection;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,41 +33,20 @@ import org.apache.logging.log4j.Logger;
 public class CapabilityEventHandler {
     private static final Logger logger = LogManager.getLogger();
 
-    private record SkillEntry(Capability<? extends INBTSerializable<CompoundTag>> capability, String key) {}
-
-    private static final List<SkillEntry> SKILL_ENTRIES = List.of(
-        new SkillEntry(FishingSkillProvider.FISHING_SKILL, "fishing_skill"),
-        new SkillEntry(MiningSkillProvider.MINING_SKILL, "mining_skill"),
-        new SkillEntry(SmithingSkillProvider.SMITHING_SKILL, "smithing_skill"),
-        new SkillEntry(FarmingProvider.FARMING_CAPABILITY, "farming_skill"),
-        new SkillEntry(CookingProvider.COOKING_CAPABILITY, "cooking_skill"),
-        new SkillEntry(CombatProvider.COMBAT_CAPABILITY, "combat_skill"),
-        new SkillEntry(AlchemyProvider.ALCHEMY_CAPABILITY, "alchemy_skill"),
-        new SkillEntry(TradingProvider.TRADING_CAPABILITY, "trading_skill"),
-        new SkillEntry(WoodCuttingProvider.WOODCUTTING_CAPABILITY, "woodcutting_skill"),
-        new SkillEntry(AttributeProvider.ATTRIBUTE_CAPABILITY, "attributes")
-    );
-
     @SubscribeEvent
     public void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof Player) {
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "fishing_skill"), new FishingSkillProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "mining_skill"), new MiningSkillProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "smithing_skill"), new SmithingSkillProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "farming_skill"), new FarmingProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "cooking_skill"), new CookingProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "combat_skill"), new CombatProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "alchemy_skill"), new AlchemyProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "trading_skill"), new TradingProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "woodcutting_skill"), new WoodCuttingProvider());
-            event.addCapability(new ResourceLocation(MoreSkill.MODID, "attributes"), new AttributeProvider());
+            SkillRegistry.getEntries().forEach(entry ->
+                    event.addCapability(
+                            new ResourceLocation(MoreSkill.MODID, entry.key()),
+                            entry.providerFactory().get()));
         }
     }
 
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         Player player = event.getEntity();
-        SKILL_ENTRIES.forEach(entry -> deserializeSkill(player, entry.capability(), entry.key()));
+        SkillRegistry.getEntries().forEach(entry -> deserializeSkill(player, entry.capability(), entry.key()));
         AttributeEffectHandler.applyAllModifiers(player);
         if (player instanceof ServerPlayer serverPlayer) {
             SyncAttributePacket.syncToPlayer(serverPlayer);
@@ -89,14 +57,14 @@ public class CapabilityEventHandler {
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         Player player = event.getEntity();
-        SKILL_ENTRIES.forEach(entry -> saveSkillData(player, entry.capability(), entry.key()));
+        SkillRegistry.getEntries().forEach(entry -> saveSkillData(player, entry.capability(), entry.key()));
     }
 
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.player.level().getGameTime() % 12000 == 0) {
             Player player = event.player;
-            SKILL_ENTRIES.forEach(entry -> saveSkillData(player, entry.capability(), entry.key()));
+            SkillRegistry.getEntries().forEach(entry -> saveSkillData(player, entry.capability(), entry.key()));
         }
         // 定期向客户端同步技能数据（约每10秒一次）
         if (event.player.level().getGameTime() % 200 == 0 && event.player instanceof ServerPlayer serverPlayer) {
@@ -108,7 +76,7 @@ public class CapabilityEventHandler {
      * 将全部技能数据同步给指定玩家（登录、打开面板、定期刷新时调用）
      */
     public static void syncAllSkillsToPlayer(ServerPlayer player) {
-        SKILL_ENTRIES.forEach(entry -> {
+        SkillRegistry.getEntries().forEach(entry -> {
             if (entry.key().equals("attributes")) {
                 return; // 属性数据由 SyncAttributePacket 同步
             }

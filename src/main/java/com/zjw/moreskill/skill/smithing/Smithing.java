@@ -40,13 +40,11 @@ public class Smithing implements INBTSerializable<CompoundTag> {
         if (nbt.contains("Level")) {
             setLevel(nbt.getInt("Level"));
         } else {
-            System.out.println("没有等级数据");
             setLevel(0); // 默认值
         }
         if (nbt.contains("Experience")) {
             setExp(nbt.getInt("Experience"));
         } else {
-            System.out.println("没有经验数据");
             setExp(0); // 默认值
         }
     }

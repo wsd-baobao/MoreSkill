@@ -1,9 +1,7 @@
 package com.zjw.moreskill.skill.trading;
 
-import com.zjw.moreskill.MoreSkill;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MerchantMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
@@ -31,17 +29,9 @@ public class TradingHandler {
         // 遍历所有交易选项
         for (int i = 0; i < offers.size(); i++) {
             MerchantOffer offer = offers.get(i);
-            // 调整第一个购买物品的数量
+            // 原版 specialPriceDiff 只作用于 costA，这里只对主物品打折
             if (!offer.getCostA().isEmpty()) {
                 int originalCount = offer.getCostA().getCount();
-                int newCount = (int) Math.round(originalCount * (1 - discount));
-                newCount = Math.max(1, newCount); // 确保至少为1
-                int specialPriceDiff = newCount - originalCount; // 计算价格差异
-                offer.setSpecialPriceDiff(specialPriceDiff); // 设置价格差异
-            }
-            // 调整第二个购买物品的数量
-            if (!offer.getCostB().isEmpty()) {
-                int originalCount = offer.getCostB().getCount();
                 int newCount = (int) Math.round(originalCount * (1 - discount));
                 newCount = Math.max(1, newCount); // 确保至少为1
                 int specialPriceDiff = newCount - originalCount; // 计算价格差异

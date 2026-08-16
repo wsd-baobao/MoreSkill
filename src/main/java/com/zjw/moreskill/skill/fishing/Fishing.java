@@ -47,14 +47,22 @@ public class Fishing implements INBTSerializable<CompoundTag> {
     }
 
     
-    public void addExp(Player player, int exp) {
-        this.exp += exp;
-        while (this.exp >= getExpForNextLevel() && this.level < MAX_LEVEL) {
-            this.level++;
-            this.exp = 0;
+    public void addExp(Player player, int expGain) {
+        if (level >= MAX_LEVEL) {
+            return;
         }
-        if (this.level >= MAX_LEVEL) {
-            this.exp = 0;
+        this.exp += expGain;
+        while (level < MAX_LEVEL) {
+            int requiredExp = getExpForNextLevel();
+            if (this.exp < requiredExp) {
+                break;
+            }
+            this.exp -= requiredExp;
+            level++;
+            if (level >= MAX_LEVEL) {
+                this.exp = 0;
+                break;
+            }
         }
     }
 

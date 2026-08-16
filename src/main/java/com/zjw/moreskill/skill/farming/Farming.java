@@ -36,13 +36,11 @@ public class Farming implements INBTSerializable<CompoundTag> {
         if (nbt.contains("Level")) {
             setLevel(nbt.getInt("Level"));
         } else {
-            System.out.println("娌℃湁绛夌骇鏁版嵁");
             setLevel(0);
         }
         if (nbt.contains("Experience")) {
             setExp(nbt.getInt("Experience"));
         } else {
-            System.out.println("娌℃湁缁忛獙鏁版嵁");
             setExp(0);
         }
     }

@@ -1,18 +1,12 @@
 package com.zjw.moreskill.network;
 
-import com.zjw.moreskill.skill.alchemy.AlchemyProvider;
-import com.zjw.moreskill.skill.combat.CombatProvider;
-import com.zjw.moreskill.skill.cooking.CookingProvider;
-import com.zjw.moreskill.skill.farming.FarmingProvider;
-import com.zjw.moreskill.skill.fishing.FishingSkillProvider;
-import com.zjw.moreskill.skill.mining.MiningSkillProvider;
-import com.zjw.moreskill.skill.smithing.SmithingSkillProvider;
-import com.zjw.moreskill.skill.trading.TradingProvider;
-import com.zjw.moreskill.skill.woodcutting.WoodCuttingProvider;
+import com.zjw.moreskill.skill.SkillRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -41,17 +35,9 @@ public class SyncSkillPacket {
         ctx.get().enqueueWork(() -> {
             LocalPlayer player = Minecraft.getInstance().player;
             if (player == null || packet.data == null) return;
-            switch (packet.skillKey) {
-                case "fishing_skill" -> player.getCapability(FishingSkillProvider.FISHING_SKILL).ifPresent(s -> s.deserializeNBT(packet.data));
-                case "mining_skill" -> player.getCapability(MiningSkillProvider.MINING_SKILL).ifPresent(s -> s.deserializeNBT(packet.data));
-                case "smithing_skill" -> player.getCapability(SmithingSkillProvider.SMITHING_SKILL).ifPresent(s -> s.deserializeNBT(packet.data));
-                case "farming_skill" -> player.getCapability(FarmingProvider.FARMING_CAPABILITY).ifPresent(s -> s.deserializeNBT(packet.data));
-                case "cooking_skill" -> player.getCapability(CookingProvider.COOKING_CAPABILITY).ifPresent(s -> s.deserializeNBT(packet.data));
-                case "combat_skill" -> player.getCapability(CombatProvider.COMBAT_CAPABILITY).ifPresent(s -> s.deserializeNBT(packet.data));
-                case "alchemy_skill" -> player.getCapability(AlchemyProvider.ALCHEMY_CAPABILITY).ifPresent(s -> s.deserializeNBT(packet.data));
-                case "trading_skill" -> player.getCapability(TradingProvider.TRADING_CAPABILITY).ifPresent(s -> s.deserializeNBT(packet.data));
-                case "woodcutting_skill" -> player.getCapability(WoodCuttingProvider.WOODCUTTING_CAPABILITY).ifPresent(s -> s.deserializeNBT(packet.data));
-                default -> { }
+            Capability<? extends INBTSerializable<CompoundTag>> capability = SkillRegistry.getByKey(packet.skillKey);
+            if (capability != null) {
+                player.getCapability(capability).ifPresent(s -> s.deserializeNBT(packet.data));
             }
         });
         ctx.get().setPacketHandled(true);
