@@ -1,7 +1,6 @@
 package com.zjw.moreskill.skill.fishing;
 
 import com.zjw.moreskill.Config;
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
@@ -25,24 +24,26 @@ public class FishingPoolManager {
     public interface ProbabilityFunction {
         double apply(int level);
     }
-    private static ItemStack createEnchantedItemStack(Item item, int level) {
-        RandomSource random = null;
-        ItemStack stack = new ItemStack(item);
-        if (Minecraft.getInstance().level != null) {
-            random = Minecraft.getInstance().level.random;
-            // 这里你可以根据需要调整附魔逻辑
-            List<EnchantmentInstance> enchantmentInstances = EnchantmentHelper.selectEnchantment(random, stack, level, true);
 
-            if (item == Items.BOOK) {
-                ItemStack enchantBook = new ItemStack(Items.ENCHANTED_BOOK);
-                for (EnchantmentInstance enchantmentInstance : enchantmentInstances) {
-                    EnchantedBookItem.addEnchantment(enchantBook, enchantmentInstance);
-                }
-                return enchantBook;
-            } else {
-                for (EnchantmentInstance enchantmentInstance : enchantmentInstances) {
-                    stack.enchant(enchantmentInstance.enchantment, enchantmentInstance.level);
-                }
+    /**
+     * 创建一个（可能附魔的）物品。仅在提供有效 RandomSource 时执行附魔；
+     * 静态初始化阶段 random 为 null 时返回普通物品，避免引用客户端类导致专用服务器崩溃。
+     */
+    private static ItemStack createEnchantedItemStack(Item item, int level, RandomSource random) {
+        ItemStack stack = new ItemStack(item);
+        if (random == null) {
+            return stack;
+        }
+        List<EnchantmentInstance> enchantmentInstances = EnchantmentHelper.selectEnchantment(random, stack, level, true);
+        if (item == Items.BOOK) {
+            ItemStack enchantBook = new ItemStack(Items.ENCHANTED_BOOK);
+            for (EnchantmentInstance enchantmentInstance : enchantmentInstances) {
+                EnchantedBookItem.addEnchantment(enchantBook, enchantmentInstance);
+            }
+            return enchantBook;
+        } else {
+            for (EnchantmentInstance enchantmentInstance : enchantmentInstances) {
+                stack.enchant(enchantmentInstance.enchantment, enchantmentInstance.level);
             }
         }
         return stack;
@@ -52,7 +53,7 @@ public class FishingPoolManager {
         ITEM_POOLS.put(Level,items);
         POOL_PROBABILITY_FUNCTIONS.put(Level, probabilityFunction);
     }
-    public List<ItemStack> getRandomItems(int level, Random random, int numberOfItems) {
+    public List<ItemStack> getRandomItems(int level, RandomSource random, int numberOfItems) {
 
         if (!(numberOfItems > 0)) return Collections.emptyList();
 
@@ -67,7 +68,6 @@ public class FishingPoolManager {
                 }
             }
         }
-        System.out.println(cachedPoolWeights.toString());
         List<ItemStack> selectedItems = new ArrayList<>();
         for (int i = 0; i < numberOfItems; i++) {
             // 计算各池的权重
@@ -91,16 +91,17 @@ public class FishingPoolManager {
     }
     private static void addItemPoolForConfig() {
         List<List<Item>> fishingPools = Config.fishingPools;
-        for (int i = 0; i < fishingPools.size(); i++){
+        for (int i = 0; i < fishingPools.size(); i++) {
             List<Item> pool = fishingPools.get(i);
-            if (!pool.isEmpty()){
+            if (!pool.isEmpty()) {
+                int poolKey = i * 10;
+                List<ItemStack> targetPool = ITEM_POOLS.computeIfAbsent(poolKey, k -> new ArrayList<>());
+                POOL_PROBABILITY_FUNCTIONS.putIfAbsent(poolKey, level -> 0.1);
                 for (Item item : pool) {
-                    ITEM_POOLS.get(i*10).add(new ItemStack(item));
+                    targetPool.add(new ItemStack(item));
                 }
-
             }
         }
-
     }
 
     static {
@@ -129,15 +130,15 @@ public class FishingPoolManager {
                         Items.FISHING_ROD
                 ).addAllItemStacks(
                         Arrays.asList(
-                                createEnchantedItemStack(Items.BOOK, 1),
-                                createEnchantedItemStack(Items.BOOK, 1),
-                                createEnchantedItemStack(Items.BOOK, 1),
-                                createEnchantedItemStack(Items.BOOK, 1),
-                                createEnchantedItemStack(Items.BOOK, 1),
-                                createEnchantedItemStack(Items.BOOK, 1),
-                                createEnchantedItemStack(Items.FISHING_ROD, 5),
-                                createEnchantedItemStack(Items.FISHING_ROD, 5),
-                                createEnchantedItemStack(Items.FISHING_ROD, 5)
+                                createEnchantedItemStack(Items.BOOK, 1, null),
+                                createEnchantedItemStack(Items.BOOK, 1, null),
+                                createEnchantedItemStack(Items.BOOK, 1, null),
+                                createEnchantedItemStack(Items.BOOK, 1, null),
+                                createEnchantedItemStack(Items.BOOK, 1, null),
+                                createEnchantedItemStack(Items.BOOK, 1, null),
+                                createEnchantedItemStack(Items.FISHING_ROD, 5, null),
+                                createEnchantedItemStack(Items.FISHING_ROD, 5, null),
+                                createEnchantedItemStack(Items.FISHING_ROD, 5, null)
                         )
                 ).build()
                 , level -> {
@@ -182,19 +183,19 @@ public class FishingPoolManager {
                 Items.NAME_TAG
         ).addAllItemStacks(
                 Arrays.asList(
-                        createEnchantedItemStack(Items.STONE_PICKAXE, 5),
-                        createEnchantedItemStack(Items.STONE_PICKAXE, 5),
-                        createEnchantedItemStack(Items.STONE_PICKAXE, 5),
-                        createEnchantedItemStack(Items.STONE_AXE, 5),
-                        createEnchantedItemStack(Items.STONE_AXE, 5),
-                        createEnchantedItemStack(Items.STONE_AXE, 5),
-                        createEnchantedItemStack(Items.STONE_SWORD, 5),
-                        createEnchantedItemStack(Items.STONE_SWORD, 5),
-                        createEnchantedItemStack(Items.STONE_SWORD, 5),
-                        createEnchantedItemStack(Items.BOOK, 5),
-                        createEnchantedItemStack(Items.BOOK, 5),
-                        createEnchantedItemStack(Items.BOOK, 5),
-                        createEnchantedItemStack(Items.BOOK, 5)
+                        createEnchantedItemStack(Items.STONE_PICKAXE, 5, null),
+                        createEnchantedItemStack(Items.STONE_PICKAXE, 5, null),
+                        createEnchantedItemStack(Items.STONE_PICKAXE, 5, null),
+                        createEnchantedItemStack(Items.STONE_AXE, 5, null),
+                        createEnchantedItemStack(Items.STONE_AXE, 5, null),
+                        createEnchantedItemStack(Items.STONE_AXE, 5, null),
+                        createEnchantedItemStack(Items.STONE_SWORD, 5, null),
+                        createEnchantedItemStack(Items.STONE_SWORD, 5, null),
+                        createEnchantedItemStack(Items.STONE_SWORD, 5, null),
+                        createEnchantedItemStack(Items.BOOK, 5, null),
+                        createEnchantedItemStack(Items.BOOK, 5, null),
+                        createEnchantedItemStack(Items.BOOK, 5, null),
+                        createEnchantedItemStack(Items.BOOK, 5, null)
                 )
         ).build(), level -> {
             double min = 0.18;
@@ -233,11 +234,11 @@ public class FishingPoolManager {
                 Items.MILK_BUCKET
         ).addAllItemStacks(
                 Arrays.asList(
-                        createEnchantedItemStack(Items.BOOK, 10),
-                        createEnchantedItemStack(Items.BOOK, 10),
-                        createEnchantedItemStack(Items.BOOK, 10),
-                        createEnchantedItemStack(Items.BOOK, 10),
-                        createEnchantedItemStack(Items.BOOK, 10)
+                        createEnchantedItemStack(Items.BOOK, 10, null),
+                        createEnchantedItemStack(Items.BOOK, 10, null),
+                        createEnchantedItemStack(Items.BOOK, 10, null),
+                        createEnchantedItemStack(Items.BOOK, 10, null),
+                        createEnchantedItemStack(Items.BOOK, 10, null)
                 )
         ).build(), level -> {
             double min = 0.13;
@@ -270,28 +271,28 @@ public class FishingPoolManager {
 //                Items.,
         ).addAllItemStacks(
                 Arrays.asList(
-                        createEnchantedItemStack(Items.IRON_SWORD, 10),
-                        createEnchantedItemStack(Items.IRON_SWORD, 10),
-                        createEnchantedItemStack(Items.IRON_SWORD, 10),
-                        createEnchantedItemStack(Items.IRON_AXE, 10),
-                        createEnchantedItemStack(Items.IRON_AXE, 10),
-                        createEnchantedItemStack(Items.IRON_AXE, 10),
-                        createEnchantedItemStack(Items.IRON_PICKAXE, 10),
-                        createEnchantedItemStack(Items.IRON_PICKAXE, 10),
-                        createEnchantedItemStack(Items.IRON_PICKAXE, 10),
-                        createEnchantedItemStack(Items.IRON_HELMET, 10),
-                        createEnchantedItemStack(Items.IRON_HELMET, 10),
-                        createEnchantedItemStack(Items.IRON_HELMET, 10),
-                        createEnchantedItemStack(Items.IRON_CHESTPLATE, 10),
-                        createEnchantedItemStack(Items.IRON_CHESTPLATE, 10),
-                        createEnchantedItemStack(Items.IRON_CHESTPLATE, 10),
-                        createEnchantedItemStack(Items.IRON_LEGGINGS, 10),
-                        createEnchantedItemStack(Items.IRON_LEGGINGS, 10),
-                        createEnchantedItemStack(Items.IRON_LEGGINGS, 10),
-                        createEnchantedItemStack(Items.IRON_BOOTS, 10),
-                        createEnchantedItemStack(Items.IRON_BOOTS, 10),
-                        createEnchantedItemStack(Items.IRON_BOOTS, 10),
-                        createEnchantedItemStack(Items.FISHING_ROD, 15)
+                        createEnchantedItemStack(Items.IRON_SWORD, 10, null),
+                        createEnchantedItemStack(Items.IRON_SWORD, 10, null),
+                        createEnchantedItemStack(Items.IRON_SWORD, 10, null),
+                        createEnchantedItemStack(Items.IRON_AXE, 10, null),
+                        createEnchantedItemStack(Items.IRON_AXE, 10, null),
+                        createEnchantedItemStack(Items.IRON_AXE, 10, null),
+                        createEnchantedItemStack(Items.IRON_PICKAXE, 10, null),
+                        createEnchantedItemStack(Items.IRON_PICKAXE, 10, null),
+                        createEnchantedItemStack(Items.IRON_PICKAXE, 10, null),
+                        createEnchantedItemStack(Items.IRON_HELMET, 10, null),
+                        createEnchantedItemStack(Items.IRON_HELMET, 10, null),
+                        createEnchantedItemStack(Items.IRON_HELMET, 10, null),
+                        createEnchantedItemStack(Items.IRON_CHESTPLATE, 10, null),
+                        createEnchantedItemStack(Items.IRON_CHESTPLATE, 10, null),
+                        createEnchantedItemStack(Items.IRON_CHESTPLATE, 10, null),
+                        createEnchantedItemStack(Items.IRON_LEGGINGS, 10, null),
+                        createEnchantedItemStack(Items.IRON_LEGGINGS, 10, null),
+                        createEnchantedItemStack(Items.IRON_LEGGINGS, 10, null),
+                        createEnchantedItemStack(Items.IRON_BOOTS, 10, null),
+                        createEnchantedItemStack(Items.IRON_BOOTS, 10, null),
+                        createEnchantedItemStack(Items.IRON_BOOTS, 10, null),
+                        createEnchantedItemStack(Items.FISHING_ROD, 15, null)
                 )
         ).build(), level -> {
             double min = 0.09;
@@ -383,25 +384,25 @@ public class FishingPoolManager {
                 Items.AMETHYST_BLOCK
         ).addAllItemStacks(
                 Arrays.asList(
-                        createEnchantedItemStack(Items.BOOK, 15),
-                        createEnchantedItemStack(Items.BOOK, 15),
-                        createEnchantedItemStack(Items.BOOK, 15),
-                        createEnchantedItemStack(Items.BOOK, 15),
-                        createEnchantedItemStack(Items.BOOK, 15),
-                        createEnchantedItemStack(Items.BOOK, 15),
-                        createEnchantedItemStack(Items.DIAMOND_AXE, 15),
-                        createEnchantedItemStack(Items.DIAMOND_AXE, 15),
-                        createEnchantedItemStack(Items.DIAMOND_AXE, 15),
-                        createEnchantedItemStack(Items.DIAMOND_PICKAXE, 15),
-                        createEnchantedItemStack(Items.DIAMOND_PICKAXE, 15),
-                        createEnchantedItemStack(Items.DIAMOND_PICKAXE, 15),
-                        createEnchantedItemStack(Items.DIAMOND_SWORD, 15),
-                        createEnchantedItemStack(Items.DIAMOND_SWORD, 15),
-                        createEnchantedItemStack(Items.DIAMOND_SWORD, 15),
-                        createEnchantedItemStack(Items.TRIDENT, 15),
-                        createEnchantedItemStack(Items.TRIDENT, 15),
-                        createEnchantedItemStack(Items.TRIDENT, 15),
-                        createEnchantedItemStack(Items.FISHING_ROD, 15)
+                        createEnchantedItemStack(Items.BOOK, 15, null),
+                        createEnchantedItemStack(Items.BOOK, 15, null),
+                        createEnchantedItemStack(Items.BOOK, 15, null),
+                        createEnchantedItemStack(Items.BOOK, 15, null),
+                        createEnchantedItemStack(Items.BOOK, 15, null),
+                        createEnchantedItemStack(Items.BOOK, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_AXE, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_AXE, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_AXE, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_PICKAXE, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_PICKAXE, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_PICKAXE, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_SWORD, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_SWORD, 15, null),
+                        createEnchantedItemStack(Items.DIAMOND_SWORD, 15, null),
+                        createEnchantedItemStack(Items.TRIDENT, 15, null),
+                        createEnchantedItemStack(Items.TRIDENT, 15, null),
+                        createEnchantedItemStack(Items.TRIDENT, 15, null),
+                        createEnchantedItemStack(Items.FISHING_ROD, 15, null)
                 )
         ).build(), level -> {
             double min = 0.03;
@@ -430,25 +431,25 @@ public class FishingPoolManager {
                 Items.NETHERITE_INGOT
         ).addAllItemStacks(
                 Arrays.asList(
-                        createEnchantedItemStack(Items.BOOK, 30),
-                        createEnchantedItemStack(Items.BOOK, 30),
-                        createEnchantedItemStack(Items.BOOK, 30),
-                        createEnchantedItemStack(Items.BOOK, 30),
-                        createEnchantedItemStack(Items.BOOK, 30),
-                        createEnchantedItemStack(Items.BOOK, 30),
-                        createEnchantedItemStack(Items.DIAMOND_HELMET, 30),
-                        createEnchantedItemStack(Items.DIAMOND_HELMET, 30),
-                        createEnchantedItemStack(Items.DIAMOND_HELMET, 30),
-                        createEnchantedItemStack(Items.DIAMOND_CHESTPLATE, 30),
-                        createEnchantedItemStack(Items.DIAMOND_CHESTPLATE, 30),
-                        createEnchantedItemStack(Items.DIAMOND_CHESTPLATE, 30),
-                        createEnchantedItemStack(Items.DIAMOND_LEGGINGS, 30),
-                        createEnchantedItemStack(Items.DIAMOND_LEGGINGS, 30),
-                        createEnchantedItemStack(Items.DIAMOND_LEGGINGS, 30),
-                        createEnchantedItemStack(Items.DIAMOND_BOOTS, 30),
-                        createEnchantedItemStack(Items.DIAMOND_BOOTS, 30),
-                        createEnchantedItemStack(Items.DIAMOND_BOOTS, 30),
-                        createEnchantedItemStack(Items.FISHING_ROD, 30)
+                        createEnchantedItemStack(Items.BOOK, 30, null),
+                        createEnchantedItemStack(Items.BOOK, 30, null),
+                        createEnchantedItemStack(Items.BOOK, 30, null),
+                        createEnchantedItemStack(Items.BOOK, 30, null),
+                        createEnchantedItemStack(Items.BOOK, 30, null),
+                        createEnchantedItemStack(Items.BOOK, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_HELMET, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_HELMET, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_HELMET, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_CHESTPLATE, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_CHESTPLATE, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_CHESTPLATE, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_LEGGINGS, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_LEGGINGS, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_LEGGINGS, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_BOOTS, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_BOOTS, 30, null),
+                        createEnchantedItemStack(Items.DIAMOND_BOOTS, 30, null),
+                        createEnchantedItemStack(Items.FISHING_ROD, 30, null)
                 )
         ).build(), level -> {
             double min = 0.0;
@@ -480,10 +481,10 @@ public class FishingPoolManager {
                 Items.COPPER_BLOCK
         ).addAllItemStacks(
                 Arrays.asList(
-                        createEnchantedItemStack(Items.TRIDENT, 30),
-                        createEnchantedItemStack(Items.TRIDENT, 30),
-                        createEnchantedItemStack(Items.TRIDENT, 30),
-                        createEnchantedItemStack(Items.FISHING_ROD, 30)
+                        createEnchantedItemStack(Items.TRIDENT, 30, null),
+                        createEnchantedItemStack(Items.TRIDENT, 30, null),
+                        createEnchantedItemStack(Items.TRIDENT, 30, null),
+                        createEnchantedItemStack(Items.FISHING_ROD, 30, null)
                 )
         ).build(), level -> {
             double min = 0.0;
@@ -508,20 +509,20 @@ public class FishingPoolManager {
                 Items.NETHERITE_BOOTS
         ).addAllItemStacks(
                 Arrays.asList(
-                        createEnchantedItemStack(Items.NETHERITE_AXE, 30),
-                        createEnchantedItemStack(Items.NETHERITE_AXE, 30),
-                        createEnchantedItemStack(Items.NETHERITE_PICKAXE, 30),
-                        createEnchantedItemStack(Items.NETHERITE_PICKAXE, 30),
-                        createEnchantedItemStack(Items.NETHERITE_SWORD, 30),
-                        createEnchantedItemStack(Items.NETHERITE_SWORD, 30),
-                        createEnchantedItemStack(Items.NETHERITE_HELMET, 30),
-                        createEnchantedItemStack(Items.NETHERITE_HELMET, 30),
-                        createEnchantedItemStack(Items.NETHERITE_CHESTPLATE, 30),
-                        createEnchantedItemStack(Items.NETHERITE_CHESTPLATE, 30),
-                        createEnchantedItemStack(Items.NETHERITE_LEGGINGS, 30),
-                        createEnchantedItemStack(Items.NETHERITE_LEGGINGS, 30),
-                        createEnchantedItemStack(Items.NETHERITE_BOOTS, 30),
-                        createEnchantedItemStack(Items.NETHERITE_BOOTS, 30)
+                        createEnchantedItemStack(Items.NETHERITE_AXE, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_AXE, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_PICKAXE, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_PICKAXE, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_SWORD, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_SWORD, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_HELMET, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_HELMET, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_CHESTPLATE, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_CHESTPLATE, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_LEGGINGS, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_LEGGINGS, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_BOOTS, 30, null),
+                        createEnchantedItemStack(Items.NETHERITE_BOOTS, 30, null)
                 )
         ).build(), level -> {
             double min = 0.0;

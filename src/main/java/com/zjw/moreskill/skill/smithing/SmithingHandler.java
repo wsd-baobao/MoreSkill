@@ -1,6 +1,5 @@
 package com.zjw.moreskill.skill.smithing;
 
-import com.zjw.moreskill.MoreSkill;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -34,7 +33,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -51,6 +49,39 @@ public class SmithingHandler {
         put(EquipmentSlot.LEGS, UUID.fromString("7d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1c"));
         put(EquipmentSlot.FEET, UUID.fromString("6d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1d"));
     }};
+
+    // 按槽位独立的修饰器UUID，确保多件锻造装备的加成正确叠加
+    private static final Map<EquipmentSlot, UUID> ARMOR_MODIFIER_IDS = new HashMap<>() {{
+        put(EquipmentSlot.HEAD, UUID.fromString("a1b2c3d4-1101-4000-8000-000000000001"));
+        put(EquipmentSlot.CHEST, UUID.fromString("a1b2c3d4-1102-4000-8000-000000000001"));
+        put(EquipmentSlot.LEGS, UUID.fromString("a1b2c3d4-1103-4000-8000-000000000001"));
+        put(EquipmentSlot.FEET, UUID.fromString("a1b2c3d4-1104-4000-8000-000000000001"));
+    }};
+
+    private static final Map<EquipmentSlot, UUID> TOUGHNESS_MODIFIER_IDS = new HashMap<>() {{
+        put(EquipmentSlot.HEAD, UUID.fromString("a1b2c3d4-1201-4000-8000-000000000001"));
+        put(EquipmentSlot.CHEST, UUID.fromString("a1b2c3d4-1202-4000-8000-000000000001"));
+        put(EquipmentSlot.LEGS, UUID.fromString("a1b2c3d4-1203-4000-8000-000000000001"));
+        put(EquipmentSlot.FEET, UUID.fromString("a1b2c3d4-1204-4000-8000-000000000001"));
+    }};
+
+    private static final Map<EquipmentSlot, UUID> MOVE_SPEED_MODIFIER_IDS = new HashMap<>() {{
+        put(EquipmentSlot.HEAD, UUID.fromString("a1b2c3d4-1301-4000-8000-000000000001"));
+        put(EquipmentSlot.CHEST, UUID.fromString("a1b2c3d4-1302-4000-8000-000000000001"));
+        put(EquipmentSlot.LEGS, UUID.fromString("a1b2c3d4-1303-4000-8000-000000000001"));
+        put(EquipmentSlot.FEET, UUID.fromString("a1b2c3d4-1304-4000-8000-000000000001"));
+    }};
+
+    // 旧版本共享UUID，用于清理玩家属性上可能残留的旧修饰器
+    private static final UUID[] LEGACY_MODIFIER_IDS = {
+            UUID.fromString("7f3b3b5a-1e8f-4a1c-9e5c-3b1c9f3b5a1e"),
+            UUID.fromString("8f4c4c6b-2f9f-5b2d-ad5c-4d2c8f4c6b2f"),
+            UUID.fromString("5a3b1c2d-6f8e-4d9c-b2a1-7f5c3d2b1a6e"),
+            UUID.fromString("9d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1a"),
+            UUID.fromString("8d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1b"),
+            UUID.fromString("7d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1c"),
+            UUID.fromString("6d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1d"),
+    };
 
     @SubscribeEvent
     public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
@@ -80,153 +111,139 @@ public class SmithingHandler {
     }
 
     @SubscribeEvent
+    public void onPlayerJoin(net.minecraftforge.event.entity.EntityJoinLevelEvent event) {
+        if (event.getEntity() instanceof Player player && !player.level().isClientSide) {
+            refreshSmithingModifiers(player);
+        }
+    }
+
+    @SubscribeEvent
     public void onLivingEquipmentChange(LivingEquipmentChangeEvent event) {
-        LivingEntity entity = event.getEntity();
-        // 检查实体是否为玩家
-        if (entity instanceof Player player) {
-            // 获取装备槽位
-            EquipmentSlot slot = event.getSlot();
+        if (event.getEntity() instanceof Player player && !player.level().isClientSide) {
+            refreshSmithingModifiers(player);
+        }
+    }
 
-            // 处理攻击速度修饰器
-            if (slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND) {
-                ItemStack to = event.getTo();
+    /**
+     * 全量重算玩家身上所有锻造修饰器：
+     * 先移除全部锻造修饰器（含旧版本残留），再按当前装备逐槽位重新应用，
+     * 避免换装时其他槽位的锻造加成丢失。
+     */
+    private static void refreshSmithingModifiers(Player player) {
+        removeAllSmithingModifiers(player);
 
-                // 处理攻击速度修饰器
-                AttributeInstance attackSpeedAttribute = Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED));
-                attackSpeedAttribute.removeModifier(ATTACK_SPEED_MODIFIER_ID);
+        // 主手武器的攻击速度加成
+        ItemStack mainHand = player.getMainHandItem();
+        if (mainHand.hasTag() && mainHand.getItem() instanceof SwordItem
+                && mainHand.getTag().contains(SmithingNBTManager.ATTACK_SPEED)) {
+            AttributeInstance attackSpeedAttribute = player.getAttribute(Attributes.ATTACK_SPEED);
+            if (attackSpeedAttribute != null) {
+                float additionalAttackSpeed = mainHand.getTag().getFloat(SmithingNBTManager.ATTACK_SPEED);
+                attackSpeedAttribute.addPermanentModifier(new AttributeModifier(
+                        ATTACK_SPEED_MODIFIER_ID,
+                        "AttackSpeedModifier",
+                        additionalAttackSpeed,
+                        AttributeModifier.Operation.ADDITION
+                ));
+            }
+        }
 
-                if (to.getTag() != null && to.getItem() instanceof SwordItem && to.hasTag() && to.getTag().contains(SmithingNBTManager.ATTACK_SPEED)) {
-                    float additionalAttackSpeed = to.getTag().getFloat(SmithingNBTManager.ATTACK_SPEED);
-                    AttributeModifier modifier = new AttributeModifier(
-                            ATTACK_SPEED_MODIFIER_ID,
-                            "AttackSpeedModifier",
-                            additionalAttackSpeed,
-                            AttributeModifier.Operation.ADDITION
-                    );
-                    attackSpeedAttribute.addPermanentModifier(modifier);
-                }
+        // 各盔甲槽位的加成
+        for (EquipmentSlot slot : ARMOR_MODIFIER_IDS.keySet()) {
+            ItemStack stack = player.getItemBySlot(slot);
+            if (stack.isEmpty() || !stack.hasTag()) continue;
+            CompoundTag tag = stack.getTag();
+
+            AttributeInstance armorAttribute = player.getAttribute(Attributes.ARMOR);
+            if (armorAttribute != null && tag.contains(SmithingNBTManager.ARMOR)) {
+                armorAttribute.addPermanentModifier(new AttributeModifier(
+                        ARMOR_MODIFIER_IDS.get(slot),
+                        "SmithingArmor." + slot.getName(),
+                        tag.getFloat(SmithingNBTManager.ARMOR),
+                        AttributeModifier.Operation.ADDITION
+                ));
             }
 
-            // 处理盔甲和盔甲韧性修饰器
-            if (slot.getType() == EquipmentSlot.Type.ARMOR) {
-                ItemStack armorStack = event.getTo();
-                // 移除之前的盔甲和盔甲韧性修饰器
-                removeArmorModifiers(player);
+            AttributeInstance toughnessAttribute = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
+            if (toughnessAttribute != null && tag.contains(SmithingNBTManager.ARMOR_TOUGHNESS)) {
+                toughnessAttribute.addPermanentModifier(new AttributeModifier(
+                        TOUGHNESS_MODIFIER_IDS.get(slot),
+                        "SmithingToughness." + slot.getName(),
+                        tag.getFloat(SmithingNBTManager.ARMOR_TOUGHNESS),
+                        AttributeModifier.Operation.ADDITION
+                ));
+            }
 
-                // 检查并添加盔甲修饰器
-                if (armorStack.hasTag() && armorStack.getTag().contains(SmithingNBTManager.ARMOR)) {
-                    float additionalArmor = armorStack.getTag().getFloat(SmithingNBTManager.ARMOR);
-                    AttributeInstance armorAttribute = player.getAttribute(Attributes.ARMOR);
-                    if (armorAttribute != null) {
-                        UUID armorModifierId = UUID.fromString("7f3b3b5a-1e8f-4a1c-9e5c-3b1c9f3b5a1e");
-                        AttributeModifier armorModifier = new AttributeModifier(
-                                armorModifierId,
-                                "SmithingArmorModifier",
-                                additionalArmor,
-                                AttributeModifier.Operation.ADDITION
-                        );
-                        armorAttribute.addPermanentModifier(armorModifier);
-                    }
-                }
-                // 检查并添加盔甲韧性修饰器
-                if (armorStack.hasTag() && armorStack.getTag().contains(SmithingNBTManager.ARMOR_TOUGHNESS)) {
-                    float additionalArmorToughness = armorStack.getTag().getFloat(SmithingNBTManager.ARMOR_TOUGHNESS);
-                    AttributeInstance armorToughnessAttribute = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
-                    if (armorToughnessAttribute != null) {
-                        UUID armorToughnessModifierId = UUID.fromString("8f4c4c6b-2f9f-5b2d-ad5c-4d2c8f4c6b2f");
-                        AttributeModifier armorToughnessModifier = new AttributeModifier(
-                                armorToughnessModifierId,
-                                "SmithingArmorToughnessModifier",
-                                additionalArmorToughness,
-                                AttributeModifier.Operation.ADDITION
-                        );
-                        armorToughnessAttribute.addPermanentModifier(armorToughnessModifier);
-                    }
-                }
+            AttributeInstance maxHealthAttribute = player.getAttribute(Attributes.MAX_HEALTH);
+            if (maxHealthAttribute != null && tag.contains(SmithingNBTManager.MAX_HEALTH)) {
+                maxHealthAttribute.addPermanentModifier(new AttributeModifier(
+                        MAX_HEALTH_MODIFIER_IDS.get(slot),
+                        "SmithingMaxHealth." + slot.getName(),
+                        tag.getFloat(SmithingNBTManager.MAX_HEALTH),
+                        AttributeModifier.Operation.ADDITION
+                ));
+            }
 
-                // 添加最大生命值修饰器
-                if (slot.getType() == EquipmentSlot.Type.ARMOR) {
-                    AttributeInstance maxHealthAttribute = player.getAttribute(Attributes.MAX_HEALTH);
-                    if (maxHealthAttribute != null) {
-                        // 移除该槽位的旧修饰器
-                        UUID modifierId = MAX_HEALTH_MODIFIER_IDS.get(slot);
-                        maxHealthAttribute.removeModifier(modifierId);
-
-                        // 检查新装备是否有最大生命值加成
-                        ItemStack newArmor = event.getTo();
-                        if (!newArmor.isEmpty() && newArmor.hasTag() && newArmor.getTag().contains(SmithingNBTManager.MAX_HEALTH)) {
-                            float additionalMaxHealth = newArmor.getTag().getFloat(SmithingNBTManager.MAX_HEALTH);
-                            AttributeModifier maxHealthModifier = new AttributeModifier(
-                                    modifierId,
-                                    "SmithingMaxHealth." + slot.getName(),
-                                    additionalMaxHealth,
-                                    AttributeModifier.Operation.ADDITION
-                            );
-                            maxHealthAttribute.addPermanentModifier(maxHealthModifier);
-                        }
-                    }
-                }
-
-                // 处理移动速度修饰器
-                if (armorStack.hasTag() && armorStack.getTag().contains(SmithingNBTManager.MOVE_SPEED)) {
-                    float additionalMoveSpeed = armorStack.getTag().getFloat(SmithingNBTManager.MOVE_SPEED);
-                    AttributeInstance moveSpeedAttribute = player.getAttribute(Attributes.MOVEMENT_SPEED);
-                    if (moveSpeedAttribute != null) {
-                        UUID moveSpeedModifierId = UUID.fromString("5a3b1c2d-6f8e-4d9c-b2a1-7f5c3d2b1a6e");
-                        AttributeModifier moveSpeedModifier = new AttributeModifier(
-                                moveSpeedModifierId,
-                                "SmithingMoveSpeedModifier",
-                                additionalMoveSpeed / 100.0f,
-                                AttributeModifier.Operation.MULTIPLY_TOTAL
-                        );
-                        moveSpeedAttribute.addPermanentModifier(moveSpeedModifier);
-                    }
-                }
+            AttributeInstance moveSpeedAttribute = player.getAttribute(Attributes.MOVEMENT_SPEED);
+            if (moveSpeedAttribute != null && tag.contains(SmithingNBTManager.MOVE_SPEED)) {
+                moveSpeedAttribute.addPermanentModifier(new AttributeModifier(
+                        MOVE_SPEED_MODIFIER_IDS.get(slot),
+                        "SmithingMoveSpeed." + slot.getName(),
+                        tag.getFloat(SmithingNBTManager.MOVE_SPEED) / 100.0f,
+                        AttributeModifier.Operation.MULTIPLY_TOTAL
+                ));
             }
         }
     }
 
-    // 辅助方法：移除盔甲和其他修饰器
-    private static void removeArmorModifiers(Player player) {
-        UUID[] modifierIds = {
-                UUID.fromString("7f3b3b5a-1e8f-4a1c-9e5c-3b1c9f3b5a1e"),   // 盔甲修饰器
-                UUID.fromString("8f4c4c6b-2f9f-5b2d-ad5c-4d2c8f4c6b2f"),   // 盔甲韧性修饰器
-                UUID.fromString("9d5c3b1a-2f8e-4d6c-a1b3-5c7f2d9e3b1a"),   // 最大生命值修饰器
-                UUID.fromString("5a3b1c2d-6f8e-4d9c-b2a1-7f5c3d2b1a6e"),    // 移动速度修饰器
+    /**
+     * 移除玩家身上所有锻造修饰器（当前按槽位UUID + 旧版本共享UUID），
+     * 供全量重算使用。
+     */
+    private static void removeAllSmithingModifiers(Player player) {
+        AttributeInstance attackSpeedAttribute = player.getAttribute(Attributes.ATTACK_SPEED);
+        if (attackSpeedAttribute != null) {
+            attackSpeedAttribute.removeModifier(ATTACK_SPEED_MODIFIER_ID);
+        }
 
-        };
-
-        AttributeInstance armorAttribute = player.getAttribute(Attributes.ARMOR);
-        AttributeInstance armorToughnessAttribute = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
-        AttributeInstance maxHealthAttribute = player.getAttribute(Attributes.MAX_HEALTH);
-        AttributeInstance moveSpeedAttribute = player.getAttribute(Attributes.MOVEMENT_SPEED);
-        //AttributeInstance absorptionAttribute = player.getAttribute(Attributes.MAX_ABSORPTION);
-
-        if (armorAttribute != null) {
-            for (UUID modifierId : modifierIds) {
-                armorAttribute.removeModifier(modifierId);
+        for (EquipmentSlot slot : ARMOR_MODIFIER_IDS.keySet()) {
+            AttributeInstance armorAttribute = player.getAttribute(Attributes.ARMOR);
+            if (armorAttribute != null) {
+                armorAttribute.removeModifier(ARMOR_MODIFIER_IDS.get(slot));
+            }
+            AttributeInstance toughnessAttribute = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
+            if (toughnessAttribute != null) {
+                toughnessAttribute.removeModifier(TOUGHNESS_MODIFIER_IDS.get(slot));
+            }
+            AttributeInstance maxHealthAttribute = player.getAttribute(Attributes.MAX_HEALTH);
+            if (maxHealthAttribute != null) {
+                maxHealthAttribute.removeModifier(MAX_HEALTH_MODIFIER_IDS.get(slot));
+            }
+            AttributeInstance moveSpeedAttribute = player.getAttribute(Attributes.MOVEMENT_SPEED);
+            if (moveSpeedAttribute != null) {
+                moveSpeedAttribute.removeModifier(MOVE_SPEED_MODIFIER_IDS.get(slot));
             }
         }
 
-        if (armorToughnessAttribute != null) {
-            for (UUID modifierId : modifierIds) {
-                armorToughnessAttribute.removeModifier(modifierId);
+        // 清理旧版本可能残留的共享UUID修饰器
+        for (UUID legacyId : LEGACY_MODIFIER_IDS) {
+            AttributeInstance armorAttribute = player.getAttribute(Attributes.ARMOR);
+            if (armorAttribute != null) {
+                armorAttribute.removeModifier(legacyId);
+            }
+            AttributeInstance toughnessAttribute = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
+            if (toughnessAttribute != null) {
+                toughnessAttribute.removeModifier(legacyId);
+            }
+            AttributeInstance maxHealthAttribute = player.getAttribute(Attributes.MAX_HEALTH);
+            if (maxHealthAttribute != null) {
+                maxHealthAttribute.removeModifier(legacyId);
+            }
+            AttributeInstance moveSpeedAttribute = player.getAttribute(Attributes.MOVEMENT_SPEED);
+            if (moveSpeedAttribute != null) {
+                moveSpeedAttribute.removeModifier(legacyId);
             }
         }
-
-        if (maxHealthAttribute != null) {
-            for (UUID modifierId : modifierIds) {
-                maxHealthAttribute.removeModifier(modifierId);
-            }
-        }
-
-        if (moveSpeedAttribute != null) {
-            for (UUID modifierId : modifierIds) {
-                moveSpeedAttribute.removeModifier(modifierId);
-            }
-        }
-
-
     }
 
     @SubscribeEvent
@@ -261,6 +278,11 @@ public class SmithingHandler {
     }
 
     @SubscribeEvent
+    public void onPlayerLoggedOut(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        playerLastAbsorptionTime.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         // 只处理玩家 Tick 阶段为 END 的情况
         if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) {
@@ -268,6 +290,11 @@ public class SmithingHandler {
         }
 
         Player player = event.player;
+
+        // 每 20 tick(1秒)才扫描一次物品栏，避免每 tick 全物品栏 tag 检查的开销
+        if (player.tickCount % 20 != 0) {
+            return;
+        }
 
         // 遍历玩家的所有装备和物品栏
         Iterable<ItemStack> allItems = concat(

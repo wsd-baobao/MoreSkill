@@ -36,7 +36,11 @@ public class FarmingHandler {
 
     // Player growth timer mappings
     private final Map<UUID, Integer> playerGrowthTimers = new HashMap<>();
-    private final Map<UUID, BlockPos> playerLastPositions = new HashMap<>();
+
+    @SubscribeEvent
+    public void onPlayerLoggedOut(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        playerGrowthTimers.remove(event.getEntity().getUUID());
+    }
 
     /**
      * Check if a block is harvestable
@@ -155,9 +159,6 @@ public class FarmingHandler {
             player.getCapability(FarmingProvider.FARMING_CAPABILITY).ifPresent(farming -> {
                 UUID playerId = player.getUUID();
                 int level = farming.getLevel();
-
-                BlockPos currentPos = player.blockPosition();
-                playerLastPositions.put(playerId, currentPos);
 
                 // Calculate frequency and range based on level
                 int frequency = Math.max(120, 600 - level * 8); // Minimum 2 seconds (40 ticks), maximum 6 seconds (120 ticks)
